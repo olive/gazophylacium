@@ -1,8 +1,8 @@
 package in.dogue.gazophylacium.mode
 
-import in.dogue.gazophylacium.data.Code
 import com.deweyvm.gleany.graphics.Color
-import in.dogue.gazophylacium.graphics.{Tile, TileRenderer}
+import in.dogue.codepage.data.Code
+import in.dogue.codepage.graphics.TileRenderer
 
 object Transition {
   def create(cols:Int, rows:Int, m1:Mode, m2:Mode, speed:Int) = {

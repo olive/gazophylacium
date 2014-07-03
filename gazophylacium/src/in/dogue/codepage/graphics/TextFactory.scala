@@ -1,7 +1,7 @@
-package in.dogue.gazophylacium.graphics
+package in.dogue.codepage.graphics
 
 import com.deweyvm.gleany.graphics.Color
-import in.dogue.gazophylacium.data.Code
+import in.dogue.codepage.data.Code
 
 
 object TextFactory {

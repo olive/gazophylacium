@@ -1,11 +1,11 @@
-package in.dogue.gazophylacium.graphics
+package in.dogue.codepage.graphics
 
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.deweyvm.gleany.data.Recti
 import com.deweyvm.gleany.AssetLoader
-import in.dogue.gazophylacium.data.Array2d
 import in.dogue.codepage.Implicits._
+import in.dogue.codepage.data.Array2d
 
 case class Tileset(cols:Int, rows:Int, tileWidth:Int, tileHeight:Int, t:Texture) {
   private val regions = Array2d.tabulate(cols, rows) { case (i, j) =>

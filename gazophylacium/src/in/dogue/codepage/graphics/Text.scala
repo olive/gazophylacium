@@ -1,11 +1,4 @@
-package in.dogue.gazophylacium.graphics
-
-import in.dogue.gazophylacium.data.Code
-import com.deweyvm.gleany.graphics.Color
-
-
-
-
+package in.dogue.codepage.graphics
 
 case class Text(tiles:Vector[Tile], f:TextFactory)  {
   val length = tiles.length

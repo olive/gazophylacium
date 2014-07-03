@@ -1,4 +1,5 @@
-package in.dogue.gazophylacium.graphics
+package in.dogue.codepage.graphics
+
 
 object Rect {
   def create(cols:Int, rows:Int, tile:Tile) = {

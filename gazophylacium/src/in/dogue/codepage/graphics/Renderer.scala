@@ -1,4 +1,4 @@
-package in.dogue.gazophylacium.graphics
+package in.dogue.codepage.graphics
 
 import com.badlogic.gdx.graphics.{GL10, Texture}
 import com.deweyvm.gleany.graphics.Color
@@ -8,8 +8,8 @@ import com.badlogic.gdx.Gdx
 import scala.collection.mutable.ArrayBuffer
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType
-import in.dogue.gazophylacium.data.Code
 import in.dogue.gazophylacium.Game
+import in.dogue.codepage.data.Code
 
 case class OglSprite(t:TextureRegion, color:Color) {
   def draw(batch:SpriteBatch, x:Int, y:Int) {

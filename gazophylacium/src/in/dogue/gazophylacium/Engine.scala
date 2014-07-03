@@ -1,11 +1,10 @@
 package in.dogue.gazophylacium
 
-import in.dogue.gazophylacium.graphics._
 import com.deweyvm.gleany.{GleanyGame, AssetLoader}
-import in.dogue.gazophylacium.graphics.Tileset
-import in.dogue.gazophylacium.mode.{TitleMode, Mode}
-import in.dogue.gazophylacium.input.Controls
+import in.dogue.gazophylacium.mode.Mode
 import in.dogue.gazophylacium.mode.game.GameMode
+import in.dogue.codepage.graphics.{Renderer, Tileset, TileRenderer}
+import in.dogue.gazophylacium.input.Controls
 
 class Engine {
   val cols = 32

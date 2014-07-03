@@ -1,6 +1,6 @@
 package in.dogue.gazophylacium.mode
 
-import in.dogue.gazophylacium.graphics.TileRenderer
+import in.dogue.codepage.graphics.TileRenderer
 
 trait Mode {
   def update:Mode

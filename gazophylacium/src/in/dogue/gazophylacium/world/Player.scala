@@ -1,11 +1,11 @@
 package in.dogue.gazophylacium.world
 
-import in.dogue.gazophylacium.graphics.{Tile, TileRenderer}
-import in.dogue.gazophylacium.data.Code
 import com.deweyvm.gleany.graphics.Color
 import com.deweyvm.gleany.input.Control
 import in.dogue.gazophylacium.input.Controls
 import in.dogue.codepage.Implicits._
+import in.dogue.codepage.data.Code
+import in.dogue.codepage.graphics.{TileRenderer, Tile}
 
 
 object Player {

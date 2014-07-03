@@ -1,4 +1,4 @@
-package in.dogue.gazophylacium.graphics
+package in.dogue.codepage.graphics
 
 import com.badlogic.gdx.graphics.OrthographicCamera
 

@@ -1,7 +1,7 @@
-package in.dogue.gazophylacium.graphics
+package in.dogue.codepage.graphics
 
-import in.dogue.gazophylacium.data.Code
 import com.deweyvm.gleany.graphics.Color
+import in.dogue.codepage.data.Code
 
 object Border {
   val standard = Border(Code.║, Code.═, Code.╔, Code.╗, Code.╚, Code.╝)(Color.Black, Color.White) _

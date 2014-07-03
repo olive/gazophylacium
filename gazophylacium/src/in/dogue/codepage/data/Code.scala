@@ -1,4 +1,4 @@
-package in.dogue.gazophylacium.data
+package in.dogue.codepage.data
 
 import scala.collection.mutable.ArrayBuffer
 import scala.util.Random

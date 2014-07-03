@@ -1,8 +1,8 @@
 package in.dogue.gazophylacium.mode
 
-import in.dogue.gazophylacium.graphics.{TextFactory, TileRenderer, Border}
 import in.dogue.gazophylacium.input.Controls
 import in.dogue.gazophylacium.mode.game.GameMode
+import in.dogue.codepage.graphics.{TileRenderer, TextFactory, Border}
 
 class TitleMode(cols:Int, rows:Int) extends Mode {
   val tf = TextFactory.bw

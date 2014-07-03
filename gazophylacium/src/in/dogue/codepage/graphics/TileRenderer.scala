@@ -1,4 +1,5 @@
-package in.dogue.gazophylacium.graphics
+package in.dogue.codepage.graphics
+
 
 object TileRenderer {
   def create = TileRenderer(Map(), 0, 0)

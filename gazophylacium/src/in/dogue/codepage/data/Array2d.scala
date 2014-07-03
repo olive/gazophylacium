@@ -1,5 +1,4 @@
-package in.dogue.gazophylacium.data
-
+package in.dogue.codepage.data
 
 import in.dogue.codepage.Implicits._
 
