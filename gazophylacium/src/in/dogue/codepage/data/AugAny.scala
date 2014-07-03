@@ -1,5 +1,5 @@
 package in.dogue.codepage.data
 
-class AugAny[T] {
-  def some(t:T) = Some(t)
+class AugAny[T](t:T) {
+  def some = Some(t)
 }

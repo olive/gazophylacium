@@ -1,22 +1,22 @@
 package in.dogue.gazophylacium.world
 
-import in.dogue.gazophylacium.input.Controls
 import in.dogue.gazophylacium.graphics.{Tile, TileRenderer}
 import in.dogue.gazophylacium.data.Code
 import com.deweyvm.gleany.graphics.Color
 import com.deweyvm.gleany.input.Control
+import in.dogue.gazophylacium.input.Controls
 import in.dogue.codepage.Implicits._
+
 
 object Player {
   def create(i:Int, j:Int) = {
-    Player(i, j, Tile(Code.☺, Color.Black, Color.White))
+    Player(Position(i, j), Tile(Code.☺, Color.Black, Color.White))
   }
 }
 
-case class Player(i:Int, j:Int, tile:Tile) {
-
-  def update:(Player, Option[Move]) = {
-    def f[T <: AnyVal](c:Control[T]) = c.zip(5,5)
+case class Player(p:Position, tile:Tile) {
+  def move:Option[Move] = {
+    def f[T <: AnyVal](c: Control[T]) = c.zip(5, 5)
     val xMove = f(Controls.AxisX) match {
       case 1 => Right.some
       case -1 => Left.some
@@ -31,17 +31,13 @@ case class Player(i:Int, j:Int, tile:Tile) {
 
     }
 
-    (this, xMove <+> yMove)
+    xMove <|> yMove
   }
-
-  def <+>[T](x:Option[T], y:Option[T]):Option[T] = x match {
-    case xx@Some(_) => xx
-    case None => y
+  def update:Player = {
+    this
   }
-
-  def performMove(move:Move) = copy(i=i+move.dx, j=j+move.dy)
 
   def draw(tr:TileRenderer):TileRenderer = {
-    tr <+ (i, j, tile)
+    tr <+ (p.x, p.y, tile)
   }
 }

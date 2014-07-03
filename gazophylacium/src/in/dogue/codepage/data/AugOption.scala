@@ -1,7 +1,7 @@
 package in.dogue.codepage.data
 
 class AugOption[T](o:Option[T]) {
-  def <+>(p:Option[T]) = o match {
+  def <|>(p:Option[T]) = o match {
     case x@Some(_) => x
     case None => p
   }
