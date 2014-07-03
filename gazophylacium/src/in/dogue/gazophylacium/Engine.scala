@@ -1,9 +1,10 @@
 package in.dogue.gazophylacium
 
 import in.dogue.gazophylacium.graphics._
-import com.deweyvm.gleany.AssetLoader
+import com.deweyvm.gleany.{GleanyGame, AssetLoader}
 import in.dogue.gazophylacium.graphics.Tileset
 import in.dogue.gazophylacium.mode.{TitleMode, Mode}
+import in.dogue.gazophylacium.input.Controls
 
 class Engine {
   val cols = 32
@@ -13,6 +14,9 @@ class Engine {
   var tr:TileRenderer = TileRenderer.create
   var mode:Mode = new TitleMode(cols, rows)
   def update() {
+    if (Controls.Escape.justPressed) {
+      GleanyGame.exit()
+    }
     mode = mode.update
   }
   def draw() {

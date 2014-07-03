@@ -5,10 +5,11 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.deweyvm.gleany.data.Recti
 import com.deweyvm.gleany.AssetLoader
 import in.dogue.gazophylacium.data.Array2d
+import in.dogue.codepage.Implicits._
 
 case class Tileset(cols:Int, rows:Int, tileWidth:Int, tileHeight:Int, t:Texture) {
   private val regions = Array2d.tabulate(cols, rows) { case (i, j) =>
-    AssetLoader.makeTextureRegion(t, Some(Recti(i * tileWidth, j * tileHeight, tileWidth, tileHeight)))
+    AssetLoader.makeTextureRegion(t, Recti(i * tileWidth, j * tileHeight, tileWidth, tileHeight).some)
   }
 
   def getRegion(i:Int, j:Int):TextureRegion = {

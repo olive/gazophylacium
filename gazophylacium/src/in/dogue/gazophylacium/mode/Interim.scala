@@ -12,7 +12,7 @@ object Interim {
 case class Interim(cols:Int, rows:Int, dest:Mode, speed:Int, t:Int) extends Mode {
   def update = {
     if (t/speed > rows*2) {
-      Transformer(cols, rows, this, dest, speed, 0)
+      Transition(cols, rows, this, dest, speed, 0)
     } else {
       copy(t=t+1)
     }

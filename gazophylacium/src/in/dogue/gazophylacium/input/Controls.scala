@@ -11,8 +11,8 @@ object Controls {
   val Right = makeKb(Input.Keys.RIGHT)
   val Up = makeKb(Input.Keys.UP)
   val Down = makeKb(Input.Keys.DOWN)
-  val Swap = makeKb(Input.Keys.SPACE)
-  val Pattern = makeKb(Input.Keys.NUM_7)
+  val Space = makeKb(Input.Keys.SPACE)
+  val Escape = makeKb(Input.Keys.ESCAPE)
 
   val AxisX = new AxisControl(Left, Right)
   val AxisY = new AxisControl(Up, Down)

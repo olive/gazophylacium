@@ -4,13 +4,13 @@ import in.dogue.gazophylacium.data.Code
 import com.deweyvm.gleany.graphics.Color
 import in.dogue.gazophylacium.graphics.{Tile, TileRenderer}
 
-object Transformer {
+object Transition {
   def create(cols:Int, rows:Int, m1:Mode, m2:Mode, speed:Int) = {
-    Transformer(cols, rows, m1, m2, speed, 0)
+    Transition(cols, rows, m1, m2, speed, 0)
   }
 }
 
-case class Transformer(cols:Int, rows:Int, m1:Mode, m2:Mode, speed:Int, t:Int) extends Mode {
+case class Transition(cols:Int, rows:Int, m1:Mode, m2:Mode, speed:Int, t:Int) extends Mode {
   def update:Mode = {
     if (t/speed > rows*2) {
       m2

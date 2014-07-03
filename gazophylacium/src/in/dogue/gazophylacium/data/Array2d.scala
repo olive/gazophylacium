@@ -1,6 +1,7 @@
 package in.dogue.gazophylacium.data
 
-import scala.collection.mutable
+
+import in.dogue.codepage.Implicits._
 
 object Array2d {
   def tabulate[T](cols:Int, rows:Int)(f:(Int,Int) => T):Array2d[T] = {
@@ -74,7 +75,7 @@ class Array2d[T](private val elements:Vector[T],
       f(e)
     }.flatMap{case (e, i) =>
       val (x, y) = indexToCoords(i, cols)
-      Some((x, y, e))
+      (x, y, e).some
     }
   }
 
@@ -102,7 +103,7 @@ class Array2d[T](private val elements:Vector[T],
     if (i < 0 || j < 0 || i > cols - 1 || j > rows - 1) {
       None
     } else {
-      Some(get(i, j))
+      get(i, j).some
     }
   }
 }
