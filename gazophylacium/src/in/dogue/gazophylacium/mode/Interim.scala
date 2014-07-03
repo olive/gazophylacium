@@ -1,8 +1,8 @@
 package in.dogue.gazophylacium.mode
 
 import com.deweyvm.gleany.graphics.Color
-import in.dogue.codepage.data.Code
-import in.dogue.codepage.graphics.{TileRenderer, Tile}
+import in.dogue.antiqua.data.Code
+import in.dogue.antiqua.graphics.{TileRenderer, Tile}
 
 object Interim {
   def create(cols:Int, rows:Int, dest:Mode, speed:Int) = {

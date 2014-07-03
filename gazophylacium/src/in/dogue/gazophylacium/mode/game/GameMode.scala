@@ -2,7 +2,7 @@ package in.dogue.gazophylacium.mode.game
 
 import in.dogue.gazophylacium.mode.Mode
 import in.dogue.gazophylacium.world.{Room, Player}
-import in.dogue.codepage.graphics.TileRenderer
+import in.dogue.antiqua.graphics.TileRenderer
 
 object GameMode {
   def create(cols:Int, rows:Int) = {

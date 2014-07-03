@@ -1,4 +1,4 @@
-package in.dogue.codepage.algebra
+package in.dogue.antiqua.algebra
 
 trait Monoid[M] {
   def zero:M

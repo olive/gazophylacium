@@ -1,4 +1,4 @@
-package in.dogue.codepage.data
+package in.dogue.antiqua.data
 
 class AugOption[T](o:Option[T]) {
   def <|>(p:Option[T]) = o match {

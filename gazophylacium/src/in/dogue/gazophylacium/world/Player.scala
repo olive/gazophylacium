@@ -3,9 +3,9 @@ package in.dogue.gazophylacium.world
 import com.deweyvm.gleany.graphics.Color
 import com.deweyvm.gleany.input.Control
 import in.dogue.gazophylacium.input.Controls
-import in.dogue.codepage.Implicits._
-import in.dogue.codepage.data.Code
-import in.dogue.codepage.graphics.{TileRenderer, Tile}
+import in.dogue.antiqua.Implicits._
+import in.dogue.antiqua.data.Code
+import in.dogue.antiqua.graphics.{TileRenderer, Tile}
 
 
 object Player {

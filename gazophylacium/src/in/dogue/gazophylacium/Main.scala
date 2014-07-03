@@ -4,7 +4,7 @@ import com.deweyvm.gleany.{GleanyInitializer, GleanyConfig, GleanyGame}
 import com.deweyvm.gleany.files.PathResolver
 import com.deweyvm.gleany.saving.{SettingDefaults, Settings}
 import com.deweyvm.gleany.data.Point2i
-import in.dogue.codepage.Implicits._
+import in.dogue.antiqua.Implicits._
 
 object Main {
   def main(args: Array[String]) {

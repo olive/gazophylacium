@@ -1,6 +1,6 @@
-package in.dogue.codepage
+package in.dogue.antiqua
 
-import in.dogue.codepage.data.{AugBool, AugAny, AugOption}
+import in.dogue.antiqua.data.{AugBool, AugAny, AugOption}
 
 object Implicits {
   implicit def any2Aug[A](a:A) = new AugAny(a)

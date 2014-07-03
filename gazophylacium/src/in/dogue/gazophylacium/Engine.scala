@@ -3,7 +3,7 @@ package in.dogue.gazophylacium
 import com.deweyvm.gleany.{GleanyGame, AssetLoader}
 import in.dogue.gazophylacium.mode.Mode
 import in.dogue.gazophylacium.mode.game.GameMode
-import in.dogue.codepage.graphics.{Renderer, Tileset, TileRenderer}
+import in.dogue.antiqua.graphics.{Renderer, Tileset, TileRenderer}
 import in.dogue.gazophylacium.input.Controls
 
 class Engine {

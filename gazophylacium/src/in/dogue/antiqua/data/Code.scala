@@ -1,4 +1,4 @@
-package in.dogue.codepage.data
+package in.dogue.antiqua.data
 
 import scala.collection.mutable.ArrayBuffer
 import scala.util.Random

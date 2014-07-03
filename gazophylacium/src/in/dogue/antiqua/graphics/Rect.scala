@@ -1,4 +1,4 @@
-package in.dogue.codepage.graphics
+package in.dogue.antiqua.graphics
 
 
 object Rect {

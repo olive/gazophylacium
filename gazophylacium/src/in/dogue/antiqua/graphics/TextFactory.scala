@@ -1,7 +1,7 @@
-package in.dogue.codepage.graphics
+package in.dogue.antiqua.graphics
 
 import com.deweyvm.gleany.graphics.Color
-import in.dogue.codepage.data.Code
+import in.dogue.antiqua.data.Code
 
 
 object TextFactory {
