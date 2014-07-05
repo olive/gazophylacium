@@ -6,6 +6,8 @@ import in.dogue.gazophylacium.input.Controls
 import in.dogue.antiqua.Implicits._
 import in.dogue.antiqua.data.Code
 import in.dogue.antiqua.graphics.{TileRenderer, Tile}
+import in.dogue.gazophylacium.data._
+import in.dogue.antiqua.graphics.Tile
 
 
 object Player {

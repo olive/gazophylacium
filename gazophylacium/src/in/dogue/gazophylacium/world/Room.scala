@@ -1,6 +1,6 @@
 package in.dogue.gazophylacium.world
 
-import in.dogue.antiqua.graphics.{Tile, TileRenderer}
+import in.dogue.antiqua.graphics.{Animation, Tile, TileRenderer}
 import in.dogue.antiqua.ui.MessageBox
 import in.dogue.antiqua.Implicits._
 import in.dogue.antiqua.data.{Code, Array2d}
@@ -8,7 +8,9 @@ import in.dogue.gazophylacium.input.Controls
 import com.deweyvm.gleany.graphics.Color
 import scala.util.Random
 import scala.collection.mutable.ArrayBuffer
-import com.deweyvm.gleany.data.Point2i
+import com.deweyvm.gleany.data.{Recti, Point2i}
+import in.dogue.gazophylacium.data._
+import scala.Some
 
 object Room {
   def createRandom(cols:Int, rows:Int, index:Point2i) = {
@@ -31,21 +33,26 @@ object Room {
       }
       Tile(code, bg, c.dim(dim))
     }
+    val r = new Random(0)
     val numTrees = 50
     val trees = (for (i <- 0 until numTrees) yield {
-      (Random.nextInt(32), Random.nextInt(32), new Tree())
+      (Random.nextInt(32), Random.nextInt(32), new Tree(r))
     }).toVector
 
     val stuff = ArrayBuffer[(Int, Int, Tree)]()
     def getRect(t:(Int,Int, Tree)) = {
       t._3.getRect(t._1, t._2)
     }
+    def oob(rect:Recti) = {
+      rect.x < 0 || rect.right >= cols - 1 || rect.y < 0 || rect.bottom >= rows - 1
+    }
+
     for (i <- 0 until numTrees) {
       var found = false
       for (k <- i + 1 until numTrees) {
         val t0 = trees(i)
         val t1 = trees(k)
-        if (getRect(t0).intersects(getRect(t1))) {
+        if (getRect(t0).intersects(getRect(t1)) || oob(getRect(t0))) {
           found = true
         }
       }
@@ -53,12 +60,12 @@ object Room {
         stuff += trees(i)
       }
     }
-
-    Room(cols, rows, index, tiles, Seq(rd), stuff.toVector)
+    val c = Critter.createSimple(16, 16)
+    Room(cols, rows, index, tiles, Seq(rd), stuff.toVector, Seq(c))
   }
 }
 
-case class Room(cols:Int, rows:Int, index:Point2i, bg:Array2d[Tile], rds:Seq[Readable], ts:Seq[(Int, Int, Tree)]) {
+case class Room(cols:Int, rows:Int, index:Point2i, bg:Array2d[Tile], rds:Seq[Readable], ts:Seq[(Int, Int, Tree)], cs:Seq[Critter]) {
 
 
   def getOob(p:Position):Option[Direction] = {
@@ -76,6 +83,8 @@ case class Room(cols:Int, rows:Int, index:Point2i, bg:Array2d[Tile], rds:Seq[Rea
       None
     }
   }
+
+  def update:Room = copy(cs = cs.map{_.update})
 
   def checkRead(i:Int, j:Int, paperOut:Boolean):Option[MessageBox] = {
     val boxes = for ((p, q) <- Seq((i + 1, j), (i - 1, j), (i, j - 1), (i, j + 1))) yield {
@@ -116,6 +125,7 @@ case class Room(cols:Int, rows:Int, index:Point2i, bg:Array2d[Tile], rds:Seq[Rea
   def draw(i:Int, j:Int)(tr:TileRenderer):TileRenderer = {
     tr.<++(bg.flatten.map{ case (p, q, t) => (p + i, q + j, t)})
       .<++<(rds.map {_.draw(i, j) _})
+      .<++<(cs.map {_.draw _})
   }
 
   def drawFg(i:Int, j:Int)(tr:TileRenderer):TileRenderer = {

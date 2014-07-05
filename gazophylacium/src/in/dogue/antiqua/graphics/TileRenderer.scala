@@ -7,6 +7,7 @@ object TileRenderer {
 
 case class TileRenderer(draws:Map[(Int,Int), Tile], originX:Int, originY:Int) {
   def at(i:Int, j:Int) = copy(originX = i, originY = j)
+  def att(ij:(Int,Int)) = at(ij._1, ij._2)
   def move(i:Int, j:Int) = copy(originX = originX + i, originY = originY + j)
   def movet(ij:(Int,Int)) = move(ij._1, ij._2)
   def <+(i:Int, j:Int, tile:Tile) = {
@@ -15,10 +16,21 @@ case class TileRenderer(draws:Map[(Int,Int), Tile], originX:Int, originY:Int) {
   }
 
   def `$>`(i:Int, j:Int, f:Tile => Tile):TileRenderer = {
-    val t = draws.get((i, j))
+    val t = draws.get((i + originX, j + originY))
     t.map(tile => {
       this <+ (i, j, f(tile))
     }).getOrElse(this)
+  }
+
+  def `~$>`(t:(Int,Int,Tile=>Tile)):TileRenderer = {
+    val i = t._1
+    val j = t._2
+    val f = t._3
+    `$>`(i, j, f)
+  }
+
+  def `$$>`(s:Seq[(Int, Int, Tile => Tile)]):TileRenderer = {
+    s.foldLeft(this){ _ `~$>` _}
   }
 
   def <+~(t:(Int,Int,Tile)) = this.<+ _ tupled t
@@ -39,8 +51,16 @@ case class TileRenderer(draws:Map[(Int,Int), Tile], originX:Int, originY:Int) {
     draws.foldLeft(this) { _ <+< _}
   }
 
+  /**
+   * Copies all draws from other to this, ignoring other's origin
+   */
+  def <*<(other:TileRenderer) = {
+    TileRenderer(draws ++ other.draws, originX, originY)
+  }
+
   def <--() = {
     TileRenderer(Map(), originX, originY)
   }
+
 
 }

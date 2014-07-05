@@ -4,6 +4,9 @@ import in.dogue.antiqua.ui.MessageBox
 import in.dogue.antiqua.graphics.TileRenderer
 import in.dogue.gazophylacium.input.Controls
 import in.dogue.antiqua.Implicits._
+import in.dogue.gazophylacium.data._
+import scala.Some
+import in.dogue.gazophylacium.mode.game.{InTransition, InField, FieldState}
 
 case class Field(m:RoomMap, r:Room, p:Player, t:Option[MessageBox]) {
 
@@ -22,10 +25,10 @@ case class Field(m:RoomMap, r:Room, p:Player, t:Option[MessageBox]) {
     } else {
       p
     }
-    copy(p=newP, t = newT2)
+    copy(p=newP, t = newT2, r=r.update)
   }
 
-  def moveRoom(d:Direction):Field = {
+  def moveRoom(d:Direction):(Field,Field) = {
     val (newX, newY) = (r.index.x + d.dx, r.index.y + d.dy)
 
     val newRoom = m(newX, newY)
@@ -39,17 +42,19 @@ case class Field(m:RoomMap, r:Room, p:Player, t:Option[MessageBox]) {
           case Right => p.p.setX(0)
           case Up =>p.p.setY(rows - 1)
           case Down => p.p.setY(0)
-          case _ => impossible
         }
 
-        copy(r=room, p=p.setPos(newPos))
+        (this, copy(r=room, p=p.setPos(newPos)))
     }
   }
 
-  def update:Field = {
+  def update:FieldState = {
     r.getOob(p.p) match {
-      case Some(d) => moveRoom(d)
-      case _ => updateCurrent
+      case Some(d) =>
+        val (f0, f1) = moveRoom(d)
+        InTransition(FieldTransition.create(r.cols, r.rows, f0, f1, d))
+      case None =>
+        InField(updateCurrent)
     }
 
   }

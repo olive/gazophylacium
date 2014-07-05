@@ -1,14 +1,13 @@
 package in.dogue.gazophylacium.world
 
-import in.dogue.antiqua.graphics.{TextFactory, Tile, Text, TileRenderer}
+import in.dogue.antiqua.graphics.{TextFactory, Tile, TileRenderer}
 import in.dogue.antiqua.data.Code
 import scala.util.Random
-import com.badlogic.gdx.math.collision.Segment
 import com.deweyvm.gleany.graphics.Color
 import in.dogue.antiqua.Implicits._
 import com.deweyvm.gleany.data.Recti
 
-class Tree {
+class Tree(r:Random) {
   def getTrunkColor:Color = Color.Brown
   def getLeafColor:Color = Color.Green
   private val trunkBase = getTrunkColor
@@ -54,7 +53,9 @@ class Tree {
   private sealed abstract class Segment(iOffset:Int, solid:Boolean) {
     val tiles:Vector[Tile]
     def draw(i:Int, j:Int)(tr:TileRenderer):TileRenderer = {
-      tr <++ tiles.zipWithIndex.map{case (t, k) => (i + iOffset + k, j, t)}
+      tr `$$>` tiles.zipWithIndex.map{case (t, k) =>
+        val f = { (tile:Tile) => tile.setCode(t.code).setFg(t.fgColor)}
+        (i + iOffset + k, j, f)}
     }
   }
   private case class Base(i:Int, trunk:Color) extends Segment(i, true) {
@@ -67,7 +68,7 @@ class Tree {
     override val tiles = f.withFg(leaf).create("/|\\").tiles
   }
 
-  private val height = 3 + Random.nextInt(5)
+  private val height = 3 + r.nextInt(5)
   private val base = Base(1, trunkBase)
   private val top = Top(0, leafBase)
   private val mids = (1 until height -1) map { x =>

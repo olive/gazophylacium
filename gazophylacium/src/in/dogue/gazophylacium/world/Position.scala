@@ -1,5 +1,7 @@
 package in.dogue.gazophylacium.world
 
+import in.dogue.gazophylacium.data.{Up, Direction}
+
 object Position {
   def create(i:Int, j:Int) = {
     Position(i, j+1, i, j, Up)
