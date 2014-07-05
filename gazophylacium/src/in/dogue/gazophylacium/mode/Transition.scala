@@ -1,7 +1,5 @@
 package in.dogue.gazophylacium.mode
 
-import com.deweyvm.gleany.graphics.Color
-import in.dogue.antiqua.data.Code
 import in.dogue.antiqua.graphics.TileRenderer
 
 object Transition {
@@ -12,7 +10,7 @@ object Transition {
 
 case class Transition(cols:Int, rows:Int, m1:Mode, m2:Mode, speed:Int, t:Int) extends Mode {
   def update:Mode = {
-    if (t/speed > rows*2) {
+    if (t/speed > rows + cols) {
       m2
     } else {
       copy(t = t+1, m1=m1.update, m2=m2.update)

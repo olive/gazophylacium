@@ -1,12 +1,18 @@
 package in.dogue.gazophylacium.world
 
+object Position {
+  def create(i:Int, j:Int) = {
+    Position(i, j+1, i, j, Up)
+  }
+}
 
-case class Position(x:Int, y:Int) {
+case class Position(prevX:Int, prevY:Int, x:Int, y:Int, d:Direction) {
+  def -->(m:Direction) = Position(x, y, m.dx + x, m.dy + y, m)
+  def performMove(m:Direction):Position = {
+    this --> m
+  }
 
-  def -->(m:Move) = (m.dx + x, m.dy + y)
-
-  def performMove(m:Move):Position = copy(x=m.dx + x, y=m.dy + y)
-
-
+  def setX(nx:Int) = Position(x, y, nx, y, d)
+  def setY(ny:Int) = Position(x, y, x, ny, d)
 }
 

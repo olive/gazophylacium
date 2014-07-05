@@ -2,6 +2,7 @@ package in.dogue.antiqua.graphics
 
 import com.deweyvm.gleany.graphics.Color
 import in.dogue.antiqua.data.Code
+import in.dogue.antiqua.Implicits._
 
 object Border {
   val standard = Border(Code.║, Code.═, Code.╔, Code.╗, Code.╚, Code.╝)(Color.Black, Color.White) _
@@ -13,7 +14,7 @@ case class Border(
   )(
     bgColor:Color, fgColor:Color
   )(
-    cols:Int, rows:Int) {
+    val cols:Int, val rows:Int) {
   private def mkTile(c:Code) = Tile(c, bgColor, fgColor)
   val edges:Seq[(Int,Int,Tile)] = {
     val vert = mkTile(v)
@@ -31,5 +32,16 @@ case class Border(
 
   def draw(p:Int, q:Int)(tr:TileRenderer):TileRenderer = {
     tr <++ edges.map {case (i, j, t) => (i + p, j + q, t)}
+  }
+
+  def filterDraw(i:Int, j:Int, f:(Int,Int) => Boolean)(tr:TileRenderer):TileRenderer = {
+    tr <++ (edges map { case (ii, jj, t) =>
+      if (f(ii, jj)) {
+        (i+ii, j+jj, t).some
+      } else {
+        None
+      }
+
+    }).flatten
   }
 }

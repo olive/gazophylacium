@@ -1,26 +1,36 @@
 package in.dogue.gazophylacium.mode.game
 
 import in.dogue.gazophylacium.mode.Mode
-import in.dogue.gazophylacium.world.{Room, Player}
-import in.dogue.antiqua.graphics.TileRenderer
-import in.dogue.antiqua.ui.{MessageBox, TextBox}
+import in.dogue.gazophylacium.world._
+import in.dogue.antiqua.graphics.{Tile, TileRenderer}
+import in.dogue.antiqua.ui.MessageBox
+import com.deweyvm.gleany.graphics.Color
+import in.dogue.antiqua.data.{Array2d, Code}
+import in.dogue.gazophylacium.input.Controls
+import scala.util.Random
+import in.dogue.gazophylacium.ui.Hud
+import com.deweyvm.gleany.data.Point2i
+import in.dogue.gazophylacium.world.Field
+import in.dogue.antiqua.graphics.Tile
+import scala.collection.mutable.ArrayBuffer
 
 object GameMode {
   def create(cols:Int, rows:Int) = {
-    val p = Player.create(0,0)
-    val r = new Room(cols, rows)
-    val t = MessageBox.create(20,10, Vector("This is a test\nText box"))
-    GameMode(cols, rows, p, r, t)
+    val p = Player.create(7,7)
+    val roomMap = RoomMap.load(cols, rows)
+    val start = Point2i(0,0)
+    val r = roomMap(start.x, start.y).get
+    val hud = Hud.create
+    val field = Field(roomMap, r, p, None)
+    GameMode(cols, rows, field, hud)
   }
 }
 
-case class GameMode(cols:Int, rows:Int, p:Player, r:Room, t:MessageBox) extends Mode {
+case class GameMode(cols:Int, rows:Int, field:Field, hud:Hud) extends Mode {
   def update = {
-    val pp = p.update
-    val ppos = p.move.map{m => r.checkMove(p.p, m)}.getOrElse(p.p)
-    copy(p=pp.copy(p=ppos))
+    copy(field=field.update)
   }
   def draw(tr:TileRenderer):TileRenderer = {
-    tr <+< p.draw <+< t.draw(0,0)
+    tr <+< field.draw(0,1) <+< hud.draw(0,0)
   }
 }

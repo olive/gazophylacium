@@ -31,6 +31,10 @@ case class TileRenderer(draws:Map[(Int,Int), Tile], originX:Int, originY:Int) {
     f(this)
   }
 
+  def <+?<(f:Option[TileRenderer => TileRenderer]) = {
+    f.foldLeft(this) { _ <+< _}
+  }
+
   def <++<(draws:Seq[TileRenderer => TileRenderer]) = {
     draws.foldLeft(this) { _ <+< _}
   }
