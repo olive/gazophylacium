@@ -59,20 +59,20 @@ class Tree(r:Random) {
     }
   }
   private case class Base(i:Int, trunk:Color) extends Segment(i, true) {
-    override val tiles = Vector(Tile(trunks.random(), Color.Black, trunk))
+    override val tiles = Vector(Tile(trunks.randomR(r), Color.Black, trunk))
   }
   private case class Mid(t:BranchType, trunk:Color, leaf:Color) extends Segment(t.i, false) {
     override val tiles = t.tiles
   }
   private case class Top(i:Int, leaf:Color) extends Segment(i, false) {
-    override val tiles = f.withFg(leaf).create("/|\\").tiles
+    override val tiles = f.withFg(leaf).create("/│\\").tiles
   }
 
   private val height = 3 + r.nextInt(5)
   private val base = Base(1, trunkBase)
   private val top = Top(0, leafBase)
   private val mids = (1 until height -1) map { x =>
-    val t = Branches.random()((height - x)/4 + 1)
+    val t = Branches.randomR(r)((height - x)/4 + 1)
     Mid(t, trunkBase, leafBase)
   }
 

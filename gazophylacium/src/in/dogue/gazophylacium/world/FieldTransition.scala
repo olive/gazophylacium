@@ -12,6 +12,9 @@ object FieldTransition {
 
 case class FieldTransition(cols:Int, rows:Int, f0:Field, f1:Field, d:Direction, t:Int) {
   val speed = 1
+
+  def coords = f0.r.index
+
   def update:FieldState = {
     val newT = t+1
     if (newT/speed > cols) {

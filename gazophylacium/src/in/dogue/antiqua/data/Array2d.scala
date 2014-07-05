@@ -42,6 +42,12 @@ class Array2d[T](private val elements:Vector[T],
 
   def strictGetAll:IndexedSeq[T] = elements
 
+  def count(f:(Int,Int,T)=>Boolean):Int = {
+    elements.zipWithIndex.count {case (t, k) =>
+      val (i, j) = indexToCoords(k, cols)
+      f(i, j, t)
+    }
+  }
 
   def map[K](f:(Int,Int,T)=>K) = {
     Array2d.tabulate(cols, rows) { case (i, j) =>
@@ -62,6 +68,11 @@ class Array2d[T](private val elements:Vector[T],
     }.getOrElse{
       this
     }
+  }
+
+  def updated(i:Int, j:Int, t:T) = {
+    val k = coordsToIndex(i, j, cols)
+    new Array2d(elements.updated(k, t), cols, rows)
   }
 
   def groupBy[K](f:T => K): Map[K, Vector[T]] = elements.groupBy(f)

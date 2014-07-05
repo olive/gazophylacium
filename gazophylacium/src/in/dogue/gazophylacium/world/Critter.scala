@@ -9,18 +9,18 @@ import in.dogue.antiqua.Implicits._
 import com.deweyvm.gleany.data.{Point2d, Recti}
 
 object Critter {
-  def createSimple(i:Int, j:Int) = {
-    val t1 = Tile(Code.^, Color.Black, Color.White)
-    val t2 = Tile(Code.-, Color.Black, Color.White)
-    val anim = Animation.create(Vector((15, t1), (15, t2)))
-    Critter(Position.create(i, j), anim, Recti(10,10,20,20))
+  def createSimple(i:Int, j:Int, roamSize:Int, r:Random) = {
+    val rs = roamSize/2
+    val t1 = Tile(Code.^, Color.Black, Color.Cyan)
+    val t2 = Tile(Code.-, Color.Black, Color.Cyan)
+    val anim = Animation.makeBlinker(15, Vector(t1, t2))
+    Critter(Position.create(i, j), anim, Recti(i - rs, j - rs, roamSize, roamSize), r)
   }
 }
 
-case class Critter(p:Position, s:Animation, confine:Recti) {
+case class Critter(p:Position, s:Animation, confine:Recti, r:Random) {
   def update:Critter = {
-    val newPos = if (Random.nextDouble > 0.9) {
-      val r = new Random
+    val newPos = if (r.nextDouble > 0.9) {
       val d = Direction.All.randomR(r)
       val newPos = p --> d
       if (confine.contains(Point2d(newPos.x, newPos.y))) {

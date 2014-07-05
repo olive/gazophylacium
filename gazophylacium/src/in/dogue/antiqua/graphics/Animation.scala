@@ -1,8 +1,14 @@
 package in.dogue.antiqua.graphics
 
+import com.deweyvm.gleany.graphics.Color
+
 object Animation {
   def create(frames:Vector[(Int,Tile)]) = {
     Animation(frames, 0, 0)
+  }
+
+  def makeBlinker(speed:Int, tiles:Vector[Tile]) = {
+    create((0 until tiles.length).map { (i:Int) => speed}.zip(tiles).toVector)
   }
 }
 
@@ -14,6 +20,10 @@ case class Animation(frames:Vector[(Int,Tile)], ptr:Int, t:Int) {
       (t+1, ptr)
     }
     copy(t=newT, ptr=newPtr)
+  }
+
+  def drawWithFg(c:Color, i:Int, j:Int)(tr:TileRenderer):TileRenderer = {
+    tr <| (i, j, getTile.setFg(c))
   }
 
   def getTile = frames(ptr)._2

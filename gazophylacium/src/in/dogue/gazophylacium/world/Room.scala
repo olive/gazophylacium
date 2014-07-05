@@ -13,30 +13,29 @@ import in.dogue.gazophylacium.data._
 import scala.Some
 
 object Room {
-  def createRandom(cols:Int, rows:Int, index:Point2i) = {
+  def createRandom(worldCols:Int, worldRows:Int, cols:Int, rows:Int, index:Point2i, r:Random) = {
     val t = MessageBox.create(20, 10, Vector("This is a test\nText box", "this another"), Controls.Space)
 
     val rd = Readable(14,14, Tile(Code.☼, Color.Black, Color.White), t)
     val tiles = Array2d.tabulate(cols, rows) { case (i, j) =>
-      val code = if (Random.nextDouble() > 0.6) {
+      val code = if (r.nextDouble > 0.6) {
 
-        Vector(Code.`'`, Code.`,`, Code.`.`, Code.`"`)(Random.nextInt(4))
+        Vector(Code.`'`, Code.`,`, Code.`.`, Code.`"`)(r.nextInt(4))
       } else {
         Code.` `
       }
-      val dim = Random.nextFloat() + 1
-      val bg = Color.GrossGreen.dim(Random.nextFloat() + 3)
-      val c = if (Random.nextDouble() < 0.5) {
+      val dim = r.nextFloat() + 1
+      val bg = Color.GrossGreen.dim(r.nextFloat() + 3)
+      val c = if (r.nextDouble() < 0.5) {
         Color.GrossGreen
       } else {
         Color.DarkGreen
       }
       Tile(code, bg, c.dim(dim))
     }
-    val r = new Random(0)
     val numTrees = 50
     val trees = (for (i <- 0 until numTrees) yield {
-      (Random.nextInt(32), Random.nextInt(32), new Tree(r))
+      (r.nextInt(32), r.nextInt(32), new Tree(r))
     }).toVector
 
     val stuff = ArrayBuffer[(Int, Int, Tree)]()
@@ -60,12 +59,16 @@ object Room {
         stuff += trees(i)
       }
     }
-    val c = Critter.createSimple(16, 16)
-    Room(cols, rows, index, tiles, Seq(rd), stuff.toVector, Seq(c))
+    val buff = 6
+    val cx = buff + r.nextInt(cols - 2*buff)
+    val cy = buff + r.nextInt(rows - 2*buff)
+    val c = Critter.createSimple(cx, cy, 20, r)
+    val d = Machine.create(10, 10, r)
+    Room(worldCols, worldRows, cols, rows, index, tiles, Seq(rd), stuff.toVector, Seq(c), d)
   }
 }
 
-case class Room(cols:Int, rows:Int, index:Point2i, bg:Array2d[Tile], rds:Seq[Readable], ts:Seq[(Int, Int, Tree)], cs:Seq[Critter]) {
+case class Room(worldCols:Int, worldRows:Int, cols:Int, rows:Int, index:Point2i, bg:Array2d[Tile], rds:Seq[Readable], ts:Seq[(Int, Int, Tree)], cs:Seq[Critter], d:Machine) {
 
 
   def getOob(p:Position):Option[Direction] = {
@@ -84,7 +87,7 @@ case class Room(cols:Int, rows:Int, index:Point2i, bg:Array2d[Tile], rds:Seq[Rea
     }
   }
 
-  def update:Room = copy(cs = cs.map{_.update})
+  def update:Room = copy(cs = cs.map{_.update}, d=d.update)
 
   def checkRead(i:Int, j:Int, paperOut:Boolean):Option[MessageBox] = {
     val boxes = for ((p, q) <- Seq((i + 1, j), (i - 1, j), (i, j - 1), (i, j + 1))) yield {
@@ -112,9 +115,20 @@ case class Room(cols:Int, rows:Int, index:Point2i, bg:Array2d[Tile], rds:Seq[Rea
       root.x == p.x && root.y == p.y}
   }
 
+  private def isWorldOob(p:Position) = {
+    val i = p.x
+    val j = p.y
+    (
+      (i < 0 && index.x == 0)
+      || (i > cols - 1 && index.x == worldCols - 1)
+      || (j < 0 && index.y == 0)
+      || (j >= rows - 1 && index.y == worldRows - 1)
+      )
+  }
+
   def checkMove(p:Position, m:Direction):Position = {
     val newPos = p --> m
-    if (solidReadable(newPos) || solidTree(newPos)) {
+    if (isWorldOob(newPos) || solidReadable(newPos) || solidTree(newPos)) {
       p.copy(d=m)
     } else {
       p.performMove(m)
@@ -126,9 +140,10 @@ case class Room(cols:Int, rows:Int, index:Point2i, bg:Array2d[Tile], rds:Seq[Rea
     tr.<++(bg.flatten.map{ case (p, q, t) => (p + i, q + j, t)})
       .<++<(rds.map {_.draw(i, j) _})
       .<++<(cs.map {_.draw _})
+      .<+<(d.draw(i, j))
   }
 
   def drawFg(i:Int, j:Int)(tr:TileRenderer):TileRenderer = {
-    tr <++< ts.map {case (p, q, t) => t.draw(p,q) _}
+    tr //<++< ts.map {case (p, q, t) => t.draw(p,q) _}
   }
 }

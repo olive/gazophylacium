@@ -15,6 +15,27 @@ case class TileRenderer(draws:Map[(Int,Int), Tile], originX:Int, originY:Int) {
     copy(draws = updated)
   }
 
+  /**
+   * Draws only the foreground of the given tile
+   */
+  def <|(i:Int, j:Int, fg:Tile) = {
+    val t = draws.get((i + originX, j + originY))
+    t.map(tile => {
+      this <+ (i, j, tile.setFg(fg.fgColor).setCode(fg.code))
+    }).getOrElse(this)
+  }
+
+  def <|~(t:(Int,Int,Tile)):TileRenderer = {
+    val i = t._1
+    val j = t._2
+    val f = t._3
+    <|(i, j, f)
+  }
+
+  def <||(s:Seq[(Int,Int,Tile)]) = {
+    s.foldLeft(this){ _ <|~ _}
+  }
+
   def `$>`(i:Int, j:Int, f:Tile => Tile):TileRenderer = {
     val t = draws.get((i + originX, j + originY))
     t.map(tile => {
@@ -58,7 +79,7 @@ case class TileRenderer(draws:Map[(Int,Int), Tile], originX:Int, originY:Int) {
     TileRenderer(draws ++ other.draws, originX, originY)
   }
 
-  def <--() = {
+  def ^^^() = {
     TileRenderer(Map(), originX, originY)
   }
 

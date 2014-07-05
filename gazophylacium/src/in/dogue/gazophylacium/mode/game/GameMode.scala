@@ -29,7 +29,8 @@ object GameMode {
 
 case class GameMode(cols:Int, rows:Int, state:FieldState, hud:Hud) extends Mode {
   def update = {
-    copy(state=state.update)
+    val coords = state.coords
+    copy(state=state.update, hud=hud.withCoords(coords.x, coords.y))
   }
   def draw(tr:TileRenderer):TileRenderer = {
     tr <+< state.draw(0,1) <+< hud.draw(0,0)

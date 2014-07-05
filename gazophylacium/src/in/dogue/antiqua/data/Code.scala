@@ -267,8 +267,8 @@ object Code {
   val `²`        = Code(253, '²', '\u00B2')
   val ■          = Code(254, '■', '\u25A0')
 
-  def random = All(Random.nextInt(All.length))
-  def randomInt(i:Int) = All(Random.nextInt(i))
+  //def random = All(Random.nextInt(All.length))
+  //def randomInt(i:Int) = All(Random.nextInt(i))
 
   def codeToUnicode(code:Char):Char = {
     if (code < 1 || code > 253) {

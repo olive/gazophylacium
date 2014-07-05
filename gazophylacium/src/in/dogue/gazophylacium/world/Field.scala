@@ -10,6 +10,8 @@ import in.dogue.gazophylacium.mode.game.{InTransition, InField, FieldState}
 
 case class Field(m:RoomMap, r:Room, p:Player, t:Option[MessageBox]) {
 
+  def coords = r.index
+
   private def updateCurrent:Field = {
     val pp = p.update
     val newT = t.flatMap{_.update}
