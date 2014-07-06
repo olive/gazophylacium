@@ -16,5 +16,9 @@ case class Position(prevX:Int, prevY:Int, x:Int, y:Int, d:Direction) {
 
   def setX(nx:Int) = Position(x, y, nx, y, d)
   def setY(ny:Int) = Position(x, y, x, ny, d)
+
+  override def toString:String = {
+    "%d,%d -> %d,%d (%s)".format(prevX, prevY, x, y, d)
+  }
 }
 

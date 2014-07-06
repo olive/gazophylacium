@@ -50,17 +50,18 @@ class Renderer(tileset:Tileset){
   val shape = new ShapeRenderer
   val camera = new Camera(Game.RenderWidth, Game.RenderHeight)
 
-  private val draws = ArrayBuffer[() => Unit]()
+  private val spriteDraws = ArrayBuffer[() => Unit]()
+  private val shapeDraws = ArrayBuffer[() => Unit]()
 
   def drawSprite(s:Sprite, x:Int, y:Int) {
-    draws.append(() => {
+    spriteDraws.append(() => {
       s.setPosition(x, y)
       s.draw(batch)
     })
   }
 
   def drawOglSprite(s:OglSprite, x:Int, y:Int) {
-    draws.append(() => {
+    spriteDraws.append(() => {
       s.draw(batch, x, y)
     })
   }
@@ -93,11 +94,13 @@ class Renderer(tileset:Tileset){
     }
   }*/
 
-  def drawRect(x:Int, y:Int, width:Int, height:Int, color:Color) {
-    shape.begin(ShapeType.Filled)
-    shape.setColor(color.toLibgdxColor)
-    shape.rect(x, y, width, height)
-    shape.end()
+  def drawRect(x:Int, y:Int, rwidth:Int, rheight:Int, color:Color) {
+    shapeDraws.append(() => {
+      shape.begin(ShapeType.Line)
+      shape.setColor(color.toLibgdxColor)
+      shape.rect(x*width, y*height, rwidth*width, rheight*height)
+      shape.end()
+    })
   }
 
   def translateShape(x:Int, y:Int)(f:() => Unit) {
@@ -122,9 +125,12 @@ class Renderer(tileset:Tileset){
     r.draws.foreach {case((i, j), t) =>
       drawTileRaw(t, i*width, j*height)
     }
-    draws foreach {_()}
-    draws.clear()
+    spriteDraws foreach {_()}
+    spriteDraws.clear()
     batch.end()
+    shape.setProjectionMatrix(camera.getProjection)
+    shapeDraws.foreach {_()}
+    shapeDraws.clear()
     r
   }
 

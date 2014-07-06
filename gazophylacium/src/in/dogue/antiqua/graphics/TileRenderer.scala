@@ -1,5 +1,7 @@
 package in.dogue.antiqua.graphics
 
+import com.deweyvm.gleany.data.Recti
+
 
 object TileRenderer {
   def create = TileRenderer(Map(), 0, 0)
@@ -14,6 +16,8 @@ case class TileRenderer(draws:Map[(Int,Int), Tile], originX:Int, originY:Int) {
     val updated = draws.updated((i + originX, j + originY), tile)
     copy(draws = updated)
   }
+
+  def project(rect:Recti) = Recti(originX, originY, 0, 0) + rect
 
   /**
    * Draws only the foreground of the given tile

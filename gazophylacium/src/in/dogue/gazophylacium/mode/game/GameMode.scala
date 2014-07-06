@@ -2,17 +2,10 @@ package in.dogue.gazophylacium.mode.game
 
 import in.dogue.gazophylacium.mode.Mode
 import in.dogue.gazophylacium.world._
-import in.dogue.antiqua.graphics.{Tile, TileRenderer}
-import in.dogue.antiqua.ui.MessageBox
-import com.deweyvm.gleany.graphics.Color
-import in.dogue.antiqua.data.{Array2d, Code}
-import in.dogue.gazophylacium.input.Controls
-import scala.util.Random
+import in.dogue.antiqua.graphics.TileRenderer
 import in.dogue.gazophylacium.ui.Hud
 import com.deweyvm.gleany.data.Point2i
 import in.dogue.gazophylacium.world.Field
-import in.dogue.antiqua.graphics.Tile
-import scala.collection.mutable.ArrayBuffer
 
 object GameMode {
   def create(cols:Int, rows:Int) = {
@@ -33,6 +26,6 @@ case class GameMode(cols:Int, rows:Int, state:FieldState, hud:Hud) extends Mode 
     copy(state=state.update, hud=hud.withCoords(coords.x, coords.y))
   }
   def draw(tr:TileRenderer):TileRenderer = {
-    tr <+< state.draw(0,1) <+< hud.draw(0,0)
+    (tr.move(0, 4) <+< state.draw(0,0)).move(0, -4) <+< hud.draw(0,0)
   }
 }

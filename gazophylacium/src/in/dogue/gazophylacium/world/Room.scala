@@ -16,7 +16,7 @@ object Room {
   def createRandom(worldCols:Int, worldRows:Int, cols:Int, rows:Int, index:Point2i, r:Random) = {
     val t = MessageBox.create(20, 10, Vector("This is a test\nText box", "this another"), Controls.Space)
 
-    val rd = Readable(14,14, Tile(Code.☼, Color.Black, Color.White), t)
+    val rd = Readable(14,14, Tile(Code.☼, Color.Black, Color.Brown), t)
     val tiles = Array2d.tabulate(cols, rows) { case (i, j) =>
       val code = if (r.nextDouble > 0.6) {
 
@@ -34,41 +34,54 @@ object Room {
       Tile(code, bg, c.dim(dim))
     }
     val numTrees = 50
-    val trees = (for (i <- 0 until numTrees) yield {
-      (r.nextInt(32), r.nextInt(32), new Tree(r))
+    val allTrees = (for (i <- 0 until numTrees) yield {
+      (r.nextInt(cols), r.nextInt(rows), new Tree(r))
     }).toVector
 
-    val stuff = ArrayBuffer[(Int, Int, Tree)]()
+    val rawTrees = ArrayBuffer[(Int, Int, Tree)]()
     def getRect(t:(Int,Int, Tree)) = {
       t._3.getRect(t._1, t._2)
     }
     def oob(rect:Recti) = {
+      println(rect)
       rect.x < 0 || rect.right >= cols - 1 || rect.y < 0 || rect.bottom >= rows - 1
     }
 
+    val d = Machine.create(10, 10, r).toDoodad(r.nextInt(cols - 10), r.nextInt(rows - 10))
     for (i <- 0 until numTrees) {
       var found = false
-      for (k <- i + 1 until numTrees) {
-        val t0 = trees(i)
-        val t1 = trees(k)
-        if (getRect(t0).intersects(getRect(t1)) || oob(getRect(t0))) {
-          found = true
+      val t0 = allTrees(i)
+      if (getRect(t0).intersects(d.getRect)) {
+        found = true
+      }
+      if (!found) {
+        for (k <- i + 1 until numTrees) {
+
+          val t1 = allTrees(k)
+          val isOob = oob(getRect(t0))
+          val intersects = getRect(t0).intersects(getRect(t1))
+
+          if (intersects || isOob) {
+            found = true
+          }
         }
       }
       if (!found) {
-        stuff += trees(i)
+        println(allTrees(i))
+        rawTrees += allTrees(i)
       }
+      ()
     }
     val buff = 6
     val cx = buff + r.nextInt(cols - 2*buff)
     val cy = buff + r.nextInt(rows - 2*buff)
     val c = Critter.createSimple(cx, cy, 20, r)
-    val d = Machine.create(10, 10, r)
-    Room(worldCols, worldRows, cols, rows, index, tiles, Seq(rd), stuff.toVector, Seq(c), d)
+    val trees = rawTrees.map { case (i, j, t) => t.toDoodad(i, j)} ++ Vector(d)
+    Room(worldCols, worldRows, cols, rows, index, tiles.flatten, Seq(rd), trees.toVector, Seq(c))
   }
 }
 
-case class Room(worldCols:Int, worldRows:Int, cols:Int, rows:Int, index:Point2i, bg:Array2d[Tile], rds:Seq[Readable], ts:Seq[(Int, Int, Tree)], cs:Seq[Critter], d:Machine) {
+case class Room(worldCols:Int, worldRows:Int, cols:Int, rows:Int, index:Point2i, bg:Seq[(Int,Int,Tile)], rds:Seq[Readable], ts:Seq[Doodad[_]], cs:Seq[Critter]) {
 
 
   def getOob(p:Position):Option[Direction] = {
@@ -87,7 +100,7 @@ case class Room(worldCols:Int, worldRows:Int, cols:Int, rows:Int, index:Point2i,
     }
   }
 
-  def update:Room = copy(cs = cs.map{_.update}, d=d.update)
+  def update:Room = copy(cs = cs.map{_.update}, ts=ts.map{_.update})
 
   def checkRead(i:Int, j:Int, paperOut:Boolean):Option[MessageBox] = {
     val boxes = for ((p, q) <- Seq((i + 1, j), (i - 1, j), (i, j - 1), (i, j + 1))) yield {
@@ -110,9 +123,9 @@ case class Room(worldCols:Int, worldRows:Int, cols:Int, rows:Int, index:Point2i,
   }
 
   private def solidTree(p:Position) = {
-    ts.exists {case (i, j, t) =>
-      val root = t.rootPos(i, j)
-      root.x == p.x && root.y == p.y}
+    ts.exists {t =>
+      t.isSolid(p.x, p.y)
+    }
   }
 
   private def isWorldOob(p:Position) = {
@@ -122,7 +135,7 @@ case class Room(worldCols:Int, worldRows:Int, cols:Int, rows:Int, index:Point2i,
       (i < 0 && index.x == 0)
       || (i > cols - 1 && index.x == worldCols - 1)
       || (j < 0 && index.y == 0)
-      || (j >= rows - 1 && index.y == worldRows - 1)
+      || (j > rows - 1 && index.y == worldRows - 1)
       )
   }
 
@@ -137,13 +150,12 @@ case class Room(worldCols:Int, worldRows:Int, cols:Int, rows:Int, index:Point2i,
   }
 
   def draw(i:Int, j:Int)(tr:TileRenderer):TileRenderer = {
-    tr.<++(bg.flatten.map{ case (p, q, t) => (p + i, q + j, t)})
+    tr.<++(bg.map{ case (p, q, t) => (p + i, q + j, t)})
       .<++<(rds.map {_.draw(i, j) _})
       .<++<(cs.map {_.draw _})
-      .<+<(d.draw(i, j))
   }
 
   def drawFg(i:Int, j:Int)(tr:TileRenderer):TileRenderer = {
-    tr //<++< ts.map {case (p, q, t) => t.draw(p,q) _}
+    tr <++< ts.map {_.draw _}
   }
 }

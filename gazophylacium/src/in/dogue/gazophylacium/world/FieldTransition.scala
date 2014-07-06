@@ -38,7 +38,7 @@ case class FieldTransition(cols:Int, rows:Int, f0:Field, f1:Field, d:Direction, 
   }
 
   def draw(i:Int, j:Int)(tr:TileRenderer):TileRenderer = {
-    val ntr = TileRenderer.create
+    val ntr = tr ^^^ ()
     val (m0, m1) = getMoves(d)
     val d0 = ntr.att(m0) <+< f0.draw(i, j)
     val d1 = ntr.att(m1) <+< f1.draw(i, j)

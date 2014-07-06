@@ -20,7 +20,7 @@ case class Transition(cols:Int, rows:Int, m1:Mode, m2:Mode, speed:Int, t:Int) ex
   def draw(tr:TileRenderer):TileRenderer = {
     val tr1 = tr <+< m1.draw
     val tr2 = tr <+< m2.draw
-    tr <++ (for (i <- 0 until cols; j <- 0 until rows) yield {
+    val draws = (for (i <- 0 until cols; j <- 0 until rows) yield {
       val r = if (j < i + rows - t/speed) {
         tr1
       } else {
@@ -30,6 +30,8 @@ case class Transition(cols:Int, rows:Int, m1:Mode, m2:Mode, speed:Int, t:Int) ex
         (i, j, t)
       }
     }).flatten
+
+    tr <++ draws
   }
 
 }

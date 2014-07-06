@@ -6,6 +6,7 @@ import scala.util.Random
 import com.deweyvm.gleany.graphics.Color
 import in.dogue.antiqua.Implicits._
 import com.deweyvm.gleany.data.Recti
+import in.dogue.gazophylacium.Engine
 
 class Tree(r:Random) {
   def getTrunkColor:Color = Color.Brown
@@ -17,7 +18,6 @@ class Tree(r:Random) {
   private sealed abstract class BranchType(val i:Int) {
     val tiles:Vector[Tile]
     def depthToLength(d:Int) = d
-    def makeBranch(c:Code, d:Int, trunk:Color) = (0 until depthToLength(d)).map{_ => Tile(c, Color.Black, trunk)}.toVector
   }
   private case class Left(trunk:Color, leaf:Color)(depth:Int) extends BranchType(0) {
     val start = Vector(Tile(Code./, Color.Black, leaf))
@@ -81,10 +81,22 @@ class Tree(r:Random) {
   def getRect(i:Int, j:Int):Recti = Recti(i, j, 3, height)
 
   def rootPos(i:Int, j:Int):Position = {
-    Position.create(i + 1, j + height - 2)
+    Position.create(i + 1, j + height - 1)
   }
 
   def draw(i:Int, j:Int)(tr:TileRenderer):TileRenderer = {
+    val span = tr.project(getRect(i, j))
+    Engine.r.drawRect(span.x, span.y, span.width, span.height, Color.White)
     tr <++< segments.zipWithIndex.map{ case (s, k) => s.draw(i, j+k) _}
   }
+
+  private def isSolid(i:Int, j:Int)(p:Int, q:Int) = {
+    val pos = rootPos(i, j)
+    pos.x == p && pos.y == q
+  }
+
+  def toDoodad(i:Int, j:Int) = {
+    Doodad[Tree](i, j, _.draw, _.getRect, _.isSolid, id[Tree], this)
+  }
+
 }

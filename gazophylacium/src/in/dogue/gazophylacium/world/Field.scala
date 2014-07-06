@@ -65,6 +65,6 @@ case class Field(m:RoomMap, r:Room, p:Player, t:Option[MessageBox]) {
     tr.<+<(r.draw(i, j))
       .<+<(p.draw(i, j))
       .<+<(r.drawFg(i, j))
-      .<+?<(t.map{_.draw(0+i,0+j)})
+      .<+?<(t.map{_.draw(i,j)})
   }
 }

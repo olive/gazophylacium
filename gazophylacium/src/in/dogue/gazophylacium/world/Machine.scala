@@ -6,6 +6,7 @@ import scala.util.Random
 import in.dogue.antiqua.Implicits._
 import com.deweyvm.gleany.graphics.Color
 import com.deweyvm.gleany.data.{Recti, Point2d}
+import in.dogue.gazophylacium.Engine
 
 case class MachineTile(c:Code, up:Int, down:Int, left:Int, right:Int) {
   def makeTile(bg:Color, fg:Color) = Tile(c, bg, fg)
@@ -91,7 +92,6 @@ object Machine {
       }
       count += 1
     }
-    println(count)
     mask
   }
 
@@ -149,7 +149,7 @@ object Machine {
       minj = Math.min(j, minj)
       maxj = Math.max(j, maxj)
     }
-    Recti(mini,minj, maxi - mini, maxj - minj)
+    Recti(mini,minj, maxi - mini + 1, maxj - minj + 1)
   }
 
 
@@ -196,8 +196,13 @@ object Machine {
 
     val filtered = MachineTile.All.filter(f)
 
-    if (filtered.length == 0 || !getOpen(i, j)) {
-      None
+    if (filtered.length == 0) {
+      if (getOpen(i, j) && (leftOpen || rightOpen || upOpen || downOpen)) {
+
+        MachineTile(Code.`#`, 0, 0, 0, 0).some
+      } else {
+        None
+      }
     } else {
       val result = filtered.randomR(r)
       result.some
@@ -206,7 +211,9 @@ object Machine {
   }
 }
 
-case class Machine(tiles:Seq[(Int,Int,Animation)], span:Recti, t:Int) {
+case class Machine(tiles:Seq[(Int,Int,Animation)], private val span:Recti, t:Int) {
+
+  def getRect(i:Int, j:Int):Recti = span + Recti(i, j, 0, 0)
 
   def update:Machine = {
     val newTiles = tiles.map {case (i, j, k) =>
@@ -221,8 +228,18 @@ case class Machine(tiles:Seq[(Int,Int,Animation)], span:Recti, t:Int) {
   }
 
   def draw(i:Int, j:Int)(tr:TileRenderer):TileRenderer = {
+    val span = tr.project(getRect(i, j))
+    Engine.r.drawRect(span.x, span.y, span.width, span.height, Color.White)
     tr <++< tiles.map { case (p, q, a) =>
       a.drawWithFg(colorPulse(t), i + p, j + q) _
     }
+  }
+
+  private def isSolid(i:Int, j:Int)(p:Int, q:Int) = {
+    tiles.exists{case (k, l, _) => k + i == p && l + j == q}
+  }
+
+  def toDoodad(i:Int, j:Int):Doodad[Machine] = {
+    Doodad(i, j, _.draw, _.getRect, _.isSolid, _.update, this)
   }
 }
