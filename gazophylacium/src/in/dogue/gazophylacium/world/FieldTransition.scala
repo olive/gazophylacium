@@ -11,13 +11,17 @@ object FieldTransition {
 }
 
 case class FieldTransition(cols:Int, rows:Int, f0:Field, f1:Field, d:Direction, t:Int) {
-  val speed = 1
-
+  val speed = 15
+  val limit = if (d == Up || d == Down) {
+    rows
+  } else {
+    cols
+  }
   def coords = f0.r.index
 
   def update:FieldState = {
     val newT = t+1
-    if (newT/speed > cols) {
+    if (newT/speed > limit) {
       InField(f1)
     } else {
       InTransition(copy(t=newT))
@@ -37,11 +41,12 @@ case class FieldTransition(cols:Int, rows:Int, f0:Field, f1:Field, d:Direction, 
     }
   }
 
-  def draw(i:Int, j:Int)(tr:TileRenderer):TileRenderer = {
+  def draw(tr:TileRenderer):TileRenderer = {
     val ntr = tr ^^^ ()
+    val offset = (ntr.originX, ntr.originY)
     val (m0, m1) = getMoves(d)
-    val d0 = ntr.att(m0) <+< f0.draw(i, j)
-    val d1 = ntr.att(m1) <+< f1.draw(i, j)
+    val d0 = ntr.att(m0).movet(offset) <+< f0.draw
+    val d1 = ntr.att(m1).movet(offset) <+< f1.draw
 
     tr <*< d0 <*< d1
   }

@@ -43,13 +43,13 @@ case class Player(p:Position, tile:Tile) {
 
   def paper = Tile(Code.■, Color.Black, Color.Green)
   def tail = Tile(Code.σ, Color.Black, Color.White)
-  def draw(i:Int, j:Int)(tr:TileRenderer):TileRenderer = {
+  def draw(tr:TileRenderer):TileRenderer = {
     val pDraw = if (Controls.Paper.isPressed) {
       val ppos = p.performMove(p.d)
-      (i+ppos.x, j+ppos.y, paper).some
+      (ppos.x, ppos.y, paper).some
     } else {
       None
     }
-    tr <+ (i+p.x, j+p.y, tile) <+ (i+p.prevX, j+p.prevY, tail) <+? pDraw
+    tr <+ (p.x, p.y, tile) <+ (p.prevX, p.prevY, tail) <+? pDraw
   }
 }

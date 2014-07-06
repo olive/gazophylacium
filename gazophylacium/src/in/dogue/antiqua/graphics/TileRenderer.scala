@@ -87,5 +87,7 @@ case class TileRenderer(draws:Map[(Int,Int), Tile], originX:Int, originY:Int) {
     TileRenderer(Map(), originX, originY)
   }
 
-
+  override def toString:String = {
+    "TileRenderer@(%d,%d) length(%d)" format (originX, originY, draws.count{case (_,_) => true})
+  }
 }

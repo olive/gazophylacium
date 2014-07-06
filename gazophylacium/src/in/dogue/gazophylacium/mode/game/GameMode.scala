@@ -26,6 +26,6 @@ case class GameMode(cols:Int, rows:Int, state:FieldState, hud:Hud) extends Mode 
     copy(state=state.update, hud=hud.withCoords(coords.x, coords.y))
   }
   def draw(tr:TileRenderer):TileRenderer = {
-    (tr.move(0, 4) <+< state.draw(0,0)).move(0, -4) <+< hud.draw(0,0)
+    (tr.move(0, 4) <+< state.draw).move(0, -4) <+< hud.draw(0,0)
   }
 }

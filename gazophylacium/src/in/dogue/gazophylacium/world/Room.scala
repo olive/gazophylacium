@@ -43,7 +43,6 @@ object Room {
       t._3.getRect(t._1, t._2)
     }
     def oob(rect:Recti) = {
-      println(rect)
       rect.x < 0 || rect.right >= cols - 1 || rect.y < 0 || rect.bottom >= rows - 1
     }
 
@@ -67,7 +66,6 @@ object Room {
         }
       }
       if (!found) {
-        println(allTrees(i))
         rawTrees += allTrees(i)
       }
       ()
@@ -149,13 +147,13 @@ case class Room(worldCols:Int, worldRows:Int, cols:Int, rows:Int, index:Point2i,
 
   }
 
-  def draw(i:Int, j:Int)(tr:TileRenderer):TileRenderer = {
-    tr.<++(bg.map{ case (p, q, t) => (p + i, q + j, t)})
-      .<++<(rds.map {_.draw(i, j) _})
+  def draw(tr:TileRenderer):TileRenderer = {
+    tr.<++(bg)
+      .<++<(rds.map {_.draw(0,0) _}) //fixme
       .<++<(cs.map {_.draw _})
   }
 
-  def drawFg(i:Int, j:Int)(tr:TileRenderer):TileRenderer = {
+  def drawFg(tr:TileRenderer):TileRenderer = {
     tr <++< ts.map {_.draw _}
   }
 }

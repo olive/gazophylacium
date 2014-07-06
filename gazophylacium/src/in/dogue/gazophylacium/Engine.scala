@@ -14,7 +14,7 @@ object Engine {
 class Engine {
   import Engine._
   val roomCols = 32
-  val roomRows = 31
+  val roomRows = 28
   var tr:TileRenderer = TileRenderer.create
   var mode:Mode = GameMode.create(roomCols, roomRows)
   def update() {

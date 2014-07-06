@@ -61,10 +61,10 @@ case class Field(m:RoomMap, r:Room, p:Player, t:Option[MessageBox]) {
 
   }
 
-  def draw(i:Int, j:Int)(tr:TileRenderer):TileRenderer = {
-    tr.<+<(r.draw(i, j))
-      .<+<(p.draw(i, j))
-      .<+<(r.drawFg(i, j))
-      .<+?<(t.map{_.draw(i,j)})
+  def draw(tr:TileRenderer):TileRenderer = {
+    tr.<+<(r.draw)
+      .<+<(p.draw)
+      .<+<(r.drawFg)
+      .<+?<(t.map{_.draw(0,0)}) //fixme
   }
 }
