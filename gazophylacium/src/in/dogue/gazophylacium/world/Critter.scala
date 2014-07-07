@@ -29,7 +29,7 @@ object Critter {
                     createDragonfly _,
                     createFrog _,
                     createBug _,
-                    createDeer _)
+                    createLizard _)
     val f = fs.randomR(r)
     f(i, j, roamSize, r)
   }
@@ -54,7 +54,7 @@ object Critter {
     simpleAnimal(Color.Green, Code.~, Code.-, 15)(i, j, roamSize, 0.99, r)
   }
 
-  def createDeer(i:Int, j:Int, roamSize:Int, r:Random) = {
+  def createLizard(i:Int, j:Int, roamSize:Int, r:Random) = {
     val bg = Color.Black
     val fg = Color.LightGreen
     val leg0_0 = Tile(Code.`[`, bg, fg)

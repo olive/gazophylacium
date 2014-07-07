@@ -9,12 +9,16 @@ import com.deweyvm.gleany.data.Recti
 import in.dogue.gazophylacium.Engine
 import in.dogue.gazophylacium.world.Position
 
-class Tree(r:Random) {
+object Tree {
   def getTrunkColor:Color = Color.Brown
   def getLeafColor:Color = Color.Green
-  private val trunkBase = getTrunkColor
-  private val leafBase = getLeafColor
-  val trunks = Vector(Code.╜, Code.╨, Code.╙)
+  val stumps = Vector(Code.╜, Code.╨, Code.╙)
+  val trunks = Vector(Code.╢, Code.╟, Code.╫, Code.║)
+}
+
+case class Tree(trunkBase:Color, leafBase:Color)(r:Random) {
+  import Tree._
+
   val f = TextFactory(Color.Black, Color.White)
   private sealed abstract class BranchType(val i:Int) {
     val tiles:Vector[Tile]
@@ -40,17 +44,11 @@ class Tree(r:Random) {
     override val tiles = Vector(Tile(Code.║, Color.Black, trunk))
   }
 
-  private val Branches = expand(IndexedSeq((30, Left(trunkBase, leafBase) _),
-                                           (30, Right(trunkBase, leafBase) _),
-                                           (30, Both(trunkBase, leafBase) _),
-                                           (10, Neither(trunkBase) _)))
+  private val Branches = IndexedSeq((30, Left(trunkBase, leafBase) _),
+                                    (30, Right(trunkBase, leafBase) _),
+                                    (30, Both(trunkBase, leafBase) _),
+                                    (10, Neither(trunkBase) _)).expand
 
-
-  private def expand[T](s:IndexedSeq[(Int, T)]) = {
-    (for ((k, t) <- s) yield {
-      for (_ <- 0 until k) yield t
-    }).flatten
-  }
   private sealed abstract class Segment(iOffset:Int, solid:Boolean) {
     val tiles:Vector[Tile]
     def draw(i:Int, j:Int)(tr:TileRenderer):TileRenderer = {
@@ -60,7 +58,7 @@ class Tree(r:Random) {
     }
   }
   private case class Base(i:Int, trunk:Color) extends Segment(i, true) {
-    override val tiles = Vector(Tile(trunks.randomR(r), Color.Black, trunk))
+    override val tiles = Vector(Tile(stumps.randomR(r), Color.Black, trunk))
   }
   private case class Mid(t:BranchType, trunk:Color, leaf:Color) extends Segment(t.i, false) {
     override val tiles = t.tiles

@@ -8,31 +8,79 @@ import in.dogue.gazophylacium.input.Controls
 import com.deweyvm.gleany.graphics.Color
 import scala.util.Random
 import scala.collection.mutable.ArrayBuffer
-import com.deweyvm.gleany.data.{Recti, Point2i}
+import com.deweyvm.gleany.data.{Point2d, Recti, Point2i}
 import in.dogue.gazophylacium.data._
+import in.dogue.gazophylacium.world.doodads._
+import in.dogue.antiqua.graphics.Tile
 import scala.Some
-import in.dogue.gazophylacium.world.doodads.{Tree, Doodad, Machine}
+import in.dogue.gazophylacium.world.doodads.Stump
+import in.dogue.gazophylacium.world.doodads.Doodad
+
+
+object RoomSpec {
+  def makeSpecs(worldCols:Int, worldRows:Int):Array2d[RoomSpec] = {
+    Array2d.tabulate(worldCols, worldRows) { case (i, j) =>
+      RoomSpec(false, false)
+    }
+  }
+}
+case class RoomSpec(hasWater:Boolean, hasMachine:Boolean) {
+  def createRoom(worldCols:Int, worldRows:Int, cols:Int, rows:Int, index:Point2i, items:Seq[ItemFactory], r:Random):Room = {
+    Room.createRandom(this, worldCols, worldRows, cols, rows, index, items, r)
+  }
+}
 
 object Room {
-  def createRandom(worldCols:Int, worldRows:Int, cols:Int, rows:Int, index:Point2i, r:Random) = {
-    val t = MessageBox.create(20, 10, Vector("This is a test\nText box", "this another"), Controls.Space)
 
-    val rd = Readable(14,14, Tile(Code.☼, Color.Black, Color.Brown), t)
+  object TerrainScheme {
+    def create(codes:IndexedSeq[(Int, Code)], bg:ColorScheme, fg:ColorScheme) = {
+      TerrainScheme(codes.expand, bg, fg)
+    }
+    val Grassy = {
+      val codes = Vector(
+        (1, Code.`'`), (1, Code.`,`), (1, Code.`.`), (1, Code.`"`), (5, Code.` `)
+      )
+      val bg = Vector(
+        (1, Color.GrossGreen)
+      )
+      val fg = Vector(
+        (1, Color.GrossGreen), (1, Color.DarkGreen)
+      )
+      create(codes, ColorScheme(bg.expand, 3, 1), ColorScheme(fg.expand, 1, 1))
+    }
+
+    val Burnt = {
+      val codes = Vector(
+        (1, Code.`'`), (1, Code.`,`), (1, Code.`.`), (1, Code.`"`), (5, Code.` `)
+      )
+      val darkBrown = Color.Tan.dim(4)
+      val bg = Vector(
+        (1, darkBrown)
+      )
+      val fg = Vector(
+        (1, darkBrown), (1, Color.Brown)
+      )
+      create(codes, ColorScheme(bg.expand, 3, 1), ColorScheme(fg.expand, 1, 1))
+    }
+  }
+
+  case class ColorScheme(colors:IndexedSeq[Color], dimBase:Double, dimAmt:Double) {
+    def getColor(r:Random) = colors.randomR(r).dim((dimBase + dimAmt*r.nextFloat()).toFloat)
+  }
+
+  case class TerrainScheme(codes:IndexedSeq[Code], bg:ColorScheme, fg:ColorScheme) {
+    def getBg(r:Random) = bg.getColor(r)
+    def getFg(r:Random) = fg.getColor(r)
+    def getCode(r:Random) = codes.randomR(r)
+  }
+
+  private def generateTerrain(biome:Biome, cols:Int, rows:Int, r:Random) = {
+    val hasWater = r.nextDouble < biome.waterProb
     val tiles = Array2d.tabulate(cols, rows) { case (i, j) =>
-      val code = if (r.nextDouble > 0.6) {
-
-        Vector(Code.`'`, Code.`,`, Code.`.`, Code.`"`)(r.nextInt(4))
-      } else {
-        Code.` `
-      }
-      val dim = r.nextFloat() + 1
-      val bg = Color.GrossGreen.dim(r.nextFloat() + 3)
-      val c = if (r.nextDouble() < 0.5) {
-        Color.GrossGreen
-      } else {
-        Color.DarkGreen
-      }
-      Animation.singleton(Tile(code, bg, c.dim(dim)))
+      val code = biome.scheme.getCode(r)
+      val bg = biome.scheme.getBg(r)
+      val fg = biome.scheme.getFg(r)
+      Animation.singleton(Tile(code, bg, fg))
     }
 
     val wcols = 20
@@ -40,52 +88,72 @@ object Room {
     val water = WaterBlob.create(wcols, wrows, 12, wcols*2, r)
     val wx = 10
     val wy = 10
-    val ttiles = tiles.map { case (i, j, tile) =>
-      water.mask.getOption(i - wx, j - wy).flatten match {
-        case Some(w) => w
-        case None => tile
+    val ttiles =
+      if (hasWater) {
+        tiles.map {
+          case (i, j, tile) =>
+            water.mask.getOption(i - wx, j - wy).flatten match {
+              case Some(w) => w
+              case None => tile
+            }
+        }
+      } else {
+        tiles
       }
-    }
+
 
     val solid = tiles.map { case (i, j, tile) =>
       water.mask.getOption(i - wx, j - wy).flatten match {
-        case Some(w) => true
+        case Some(w) => hasWater
         case None => false
       }
     }
+    Terrain(ttiles.flatten, solid)
 
+  }
+
+  private def makeDoodads(biome:Biome, terrain:Terrain, cols:Int, rows:Int, hasMachine:Boolean, r:Random) = {
     val numTrees = 50
+    //val trunkColor = Color.Tan.dim(2)
+    //val leafColor = Color.Brown.dim(2)
+    val makeTrees = biome.treeTypes
+
     val allTrees = (for (i <- 0 until numTrees) yield {
-      (r.nextInt(cols), r.nextInt(rows), new Tree(r))
+      makeTrees.randomR(r)(r, r.nextInt(cols), r.nextInt(rows))
     }).toVector
 
-    val rawTrees = ArrayBuffer[(Int, Int, Tree)]()
-    def getRect(t:(Int,Int, Tree)) = {
-      t._3.getRect(t._1, t._2)
-    }
+    val rawTrees = ArrayBuffer[Doodad[_]]()
+
     def oob(rect:Recti) = {
       rect.x < 0 || rect.right >= cols - 1 || rect.y < 0 || rect.bottom >= rows - 1
     }
 
-    val waterRect = Recti(wx, wy, 0, 0) + water.span
-    def inWater(rect:Recti) = {
-      rect.intersects(waterRect)
+    def isUnwalkable(rect:Recti) = {
+      val ij = for (i <- rect.x until rect.x + rect.width;
+                    j <- rect.y until rect.y + rect.height) yield (i, j)
+      ij.exists{ case (i, j) => terrain.isSolid(i, j) }
     }
 
-    val d = Machine.create(10, 10, r).toDoodad(r.nextInt(cols - 10), r.nextInt(rows - 10))
+    val d = if (hasMachine) {
+      val m = Machine.create(10, 10, r).toDoodad(r.nextInt(cols - 10), r.nextInt(rows - 10))
+      Vector(m)
+    } else {
+      Vector()
+    }
     for (i <- 0 until numTrees) {
       var found = false
       val t0 = allTrees(i)
-      val water = inWater(getRect(t0))
-      if (getRect(t0).intersects(d.getRect) || water) {
+      val t0r = t0.getRect
+      val water = isUnwalkable(t0r)
+      if (d.exists{ m => t0r.intersects(m.getRect) } || water) {
         found = true
       }
       if (!found) {
         for (k <- i + 1 until numTrees) {
 
           val t1 = allTrees(k)
-          val isOob = oob(getRect(t0))
-          val intersects = getRect(t0).intersects(getRect(t1))
+          val isOob = oob(t0r)
+          val intersects = t0r.intersects(t1.getRect)
 
           if (intersects || isOob) {
             found = true
@@ -97,17 +165,45 @@ object Room {
       }
       ()
     }
+    rawTrees ++ d
+  }
+
+  private def getReadables(r:Random) = {
+    val t = MessageBox.create(20, 10, Vector("This is a test\nText box", "this another"), Controls.Space)
+    val rd = Readable(14,14, Tile(Code.☼, Color.Black, Color.Brown), t)
+    Seq(rd)
+  }
+
+  private def getCritters(biome:Biome, cols:Int, rows:Int, r:Random) = {
     val buff = 6
     val cx = buff + r.nextInt(cols - 2*buff)
     val cy = buff + r.nextInt(rows - 2*buff)
-    val c = Critter.createRandom(cx, cy, 20, r)
-    val trees = rawTrees.map { case (i, j, t) => t.toDoodad(i, j)} ++ Vector(d)
-    val item = Item.create(0, 0, Animation.create(Vector((1, Tile(Code.t, Color.Black, Color.White)))))
+    val c = biome.critters.randomR(r)(cx, cy, 20, r)
+    Seq(c)
+  }
 
+  private def getItems(cols:Int, rows:Int, terrain:Terrain, doodads:Seq[Doodad[_]], items:Seq[ItemFactory], r:Random) = {
+    var found = false
+    var pos = Point2i(0,0)
+    while (!found) {
+      pos = Point2i(r.nextInt(cols), r.nextInt(rows))
+      if (doodads.exists{_.getRect.contains(pos.toPoint2d)} || terrain.isSolid(pos.x, pos.y)){
 
-    val terrain = Terrain(ttiles.flatten, solid)
+      } else {
+        found = true
+      }
+    }
+    items.map {_.makeItem(pos.x, pos.y)}
+  }
 
-    Room(worldCols, worldRows, cols, rows, index, terrain, Seq(rd), trees.toVector, Seq(c), Seq(item))
+  def createRandom(spec:RoomSpec, worldCols:Int, worldRows:Int, cols:Int, rows:Int, index:Point2i, is:Seq[ItemFactory], r:Random) = {
+    val biome = Vector(Biome.Forest, Biome.BurntForest).randomR(r)
+    val terrain = generateTerrain(biome, cols, rows, r)
+    val doodads = makeDoodads(biome, terrain, rows, cols, spec.hasMachine, r)
+    val readables = getReadables(r)
+    val critters = getCritters(biome, cols, rows, r)
+    val items = getItems(cols, rows, terrain, doodads, is, r)
+    Room(worldCols, worldRows, cols, rows, index, terrain, readables, doodads.toVector, critters, items)
   }
 }
 
