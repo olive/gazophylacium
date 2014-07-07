@@ -11,7 +11,7 @@ object FieldTransition {
 }
 
 case class FieldTransition(cols:Int, rows:Int, f0:Field, f1:Field, d:Direction, t:Int) {
-  val speed = 15
+  val speed = 1
   val limit = if (d == Up || d == Down) {
     rows
   } else {

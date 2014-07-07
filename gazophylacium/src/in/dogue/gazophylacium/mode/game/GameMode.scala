@@ -13,7 +13,7 @@ object GameMode {
     val roomMap = RoomMap.load(cols, rows)
     val start = Point2i(0,0)
     val r = roomMap(start.x, start.y).get
-    val hud = Hud.create
+    val hud = Hud.create(cols, 4)
     val field = Field(roomMap, r, p, None)
     GameMode(cols, rows, InField(field), hud)
   }
@@ -23,9 +23,11 @@ object GameMode {
 case class GameMode(cols:Int, rows:Int, state:FieldState, hud:Hud) extends Mode {
   def update = {
     val coords = state.coords
-    copy(state=state.update, hud=hud.withCoords(coords.x, coords.y))
+    val inventory = state.inventory
+    val newHud = hud.withCoords(coords.x, coords.y).withInventory(inventory)
+    copy(state=state.update, hud=newHud)
   }
   def draw(tr:TileRenderer):TileRenderer = {
-    (tr.move(0, 4) <+< state.draw).move(0, -4) <+< hud.draw(0,0)
+    (tr.move(0, hud.height) <+< state.draw).move(0, -hud.height) <+< hud.draw
   }
 }

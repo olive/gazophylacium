@@ -1,4 +1,4 @@
-package in.dogue.gazophylacium.world
+package in.dogue.gazophylacium.world.doodads
 
 import in.dogue.antiqua.graphics.{TextFactory, Tile, TileRenderer}
 import in.dogue.antiqua.data.Code
@@ -7,6 +7,7 @@ import com.deweyvm.gleany.graphics.Color
 import in.dogue.antiqua.Implicits._
 import com.deweyvm.gleany.data.Recti
 import in.dogue.gazophylacium.Engine
+import in.dogue.gazophylacium.world.Position
 
 class Tree(r:Random) {
   def getTrunkColor:Color = Color.Brown
@@ -85,8 +86,8 @@ class Tree(r:Random) {
   }
 
   def draw(i:Int, j:Int)(tr:TileRenderer):TileRenderer = {
-    val span = tr.project(getRect(i, j))
-    Engine.r.drawRect(span.x, span.y, span.width, span.height, Color.White)
+    //val span = tr.project(getRect(i, j))
+    //Engine.r.drawRect(span.x, span.y, span.width, span.height, Color.White)
     tr <++< segments.zipWithIndex.map{ case (s, k) => s.draw(i, j+k) _}
   }
 

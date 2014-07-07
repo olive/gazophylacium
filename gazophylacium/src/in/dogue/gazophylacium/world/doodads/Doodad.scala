@@ -1,4 +1,4 @@
-package in.dogue.gazophylacium.world
+package in.dogue.gazophylacium.world.doodads
 
 import in.dogue.antiqua.graphics.TileRenderer
 import com.deweyvm.gleany.data.Recti

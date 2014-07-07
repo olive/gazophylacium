@@ -1,4 +1,4 @@
-package in.dogue.antiqua.data
+package in.dogue.antiqua.geometry
 
 import com.deweyvm.gleany.data.Point2d
 import in.dogue.antiqua.Implicits

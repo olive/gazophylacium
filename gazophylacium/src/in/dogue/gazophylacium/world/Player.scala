@@ -12,12 +12,15 @@ import in.dogue.antiqua.graphics.Tile
 
 object Player {
   def create(i:Int, j:Int) = {
-    Player(Position.create(i, j), Tile(Code.☺, Color.Black, Color.White))
+    Player(Position.create(i, j), Tile(Code.☺, Color.Black, Color.White), Seq())
   }
 }
 
-case class Player(p:Position, tile:Tile) {
+case class Player(p:Position, tile:Tile, items:Seq[Item]) {
 
+  def collect(s:Seq[Item]) = {
+    copy(items = items ++ s)
+  }
   def setPos(pos:Position) = copy(p=pos)
 
   def move:Option[Direction] = {

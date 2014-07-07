@@ -8,6 +8,7 @@ object Implicits {
   implicit def bool2Aug(b:Boolean) = new AugBool(b)
   implicit def indexedSeq2Aug[A](s:IndexedSeq[A]) = new AugIndexedSeq[A](s)
   implicit def num2Aug[A](a:A)(implicit n: Numeric[A]) = new AugNum(a)
+  implicit def seq2AugPosSeq[A](seq:Seq[(Int,Int,A)]) = new AugPosSeq(seq)
   def id[T](t:T) = t
 
   def impossible = throw new Exception("Impossible")

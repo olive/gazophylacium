@@ -11,6 +11,7 @@ import scala.collection.mutable.ArrayBuffer
 import com.deweyvm.gleany.data.{Recti, Point2i}
 import in.dogue.gazophylacium.data._
 import scala.Some
+import in.dogue.gazophylacium.world.doodads.{Tree, Doodad, Machine}
 
 object Room {
   def createRandom(worldCols:Int, worldRows:Int, cols:Int, rows:Int, index:Point2i, r:Random) = {
@@ -31,8 +32,28 @@ object Room {
       } else {
         Color.DarkGreen
       }
-      Tile(code, bg, c.dim(dim))
+      Animation.singleton(Tile(code, bg, c.dim(dim)))
     }
+
+    val wcols = 20
+    val wrows = 20
+    val water = WaterBlob.create(wcols, wrows, 12, wcols*2, r)
+    val wx = 10
+    val wy = 10
+    val ttiles = tiles.map { case (i, j, tile) =>
+      water.mask.getOption(i - wx, j - wy).flatten match {
+        case Some(w) => w
+        case None => tile
+      }
+    }
+
+    val solid = tiles.map { case (i, j, tile) =>
+      water.mask.getOption(i - wx, j - wy).flatten match {
+        case Some(w) => true
+        case None => false
+      }
+    }
+
     val numTrees = 50
     val allTrees = (for (i <- 0 until numTrees) yield {
       (r.nextInt(cols), r.nextInt(rows), new Tree(r))
@@ -46,11 +67,17 @@ object Room {
       rect.x < 0 || rect.right >= cols - 1 || rect.y < 0 || rect.bottom >= rows - 1
     }
 
+    val waterRect = Recti(wx, wy, 0, 0) + water.span
+    def inWater(rect:Recti) = {
+      rect.intersects(waterRect)
+    }
+
     val d = Machine.create(10, 10, r).toDoodad(r.nextInt(cols - 10), r.nextInt(rows - 10))
     for (i <- 0 until numTrees) {
       var found = false
       val t0 = allTrees(i)
-      if (getRect(t0).intersects(d.getRect)) {
+      val water = inWater(getRect(t0))
+      if (getRect(t0).intersects(d.getRect) || water) {
         found = true
       }
       if (!found) {
@@ -73,14 +100,22 @@ object Room {
     val buff = 6
     val cx = buff + r.nextInt(cols - 2*buff)
     val cy = buff + r.nextInt(rows - 2*buff)
-    val c = Critter.createSimple(cx, cy, 20, r)
+    val c = Critter.createRandom(cx, cy, 20, r)
     val trees = rawTrees.map { case (i, j, t) => t.toDoodad(i, j)} ++ Vector(d)
-    Room(worldCols, worldRows, cols, rows, index, tiles.flatten, Seq(rd), trees.toVector, Seq(c))
+    val item = Item.create(0, 0, Animation.create(Vector((1, Tile(Code.t, Color.Black, Color.White)))))
+
+
+    val terrain = Terrain(ttiles.flatten, solid)
+
+    Room(worldCols, worldRows, cols, rows, index, terrain, Seq(rd), trees.toVector, Seq(c), Seq(item))
   }
 }
 
-case class Room(worldCols:Int, worldRows:Int, cols:Int, rows:Int, index:Point2i, bg:Seq[(Int,Int,Tile)], rds:Seq[Readable], ts:Seq[Doodad[_]], cs:Seq[Critter]) {
+case class Room(worldCols:Int, worldRows:Int, cols:Int, rows:Int, index:Point2i, terrain:Terrain, rds:Seq[Readable], ts:Seq[Doodad[_]], cs:Seq[Critter], is:Seq[Item]) {
 
+  def load(info:RoomInfo) = {
+    copy(is=is.filter{it => !info.contains(it)})
+  }
 
   def getOob(p:Position):Option[Direction] = {
     val i = p.x
@@ -98,7 +133,24 @@ case class Room(worldCols:Int, worldRows:Int, cols:Int, rows:Int, index:Point2i,
     }
   }
 
-  def update:Room = copy(cs = cs.map{_.update}, ts=ts.map{_.update})
+  def update:Room = {
+    val newCs = cs.map{_.update}
+    val newTs = ts.map{_.update}
+    val newIs = is.map{_.update}
+    val newTerrain = terrain.update
+    copy(cs=newCs, ts=newTs, is=newIs, terrain=newTerrain)
+  }
+
+  def checkItem(i:Int, j:Int):(Seq[Item],Room) = {
+    def isItem(it:Item, i:Int, j:Int) = it.i == i && it.j == j
+    val found = is.find{it => isItem(it, i, j)}
+    if (found.isDefined) {
+      val newItems = is.filter{it => !isItem(it, i, j)}
+      (Seq(found).flatten, copy(is=newItems))
+    } else {
+      (Seq(), this)
+    }
+  }
 
   def checkRead(i:Int, j:Int, paperOut:Boolean):Option[MessageBox] = {
     val boxes = for ((p, q) <- Seq((i + 1, j), (i - 1, j), (i, j - 1), (i, j + 1))) yield {
@@ -137,23 +189,53 @@ case class Room(worldCols:Int, worldRows:Int, cols:Int, rows:Int, index:Point2i,
       )
   }
 
+  private def isRoomOob(p:Position) = {
+    val i = p.x
+    val j = p.y
+    i < 0 || i > cols - 1 || j < 0 || j > rows - 1
+  }
+
+  private def isSolid(p:Position):Boolean = {
+    isWorldOob(p) || solidReadable(p) || solidTree(p) || terrain.isSolid(p.x, p.y)
+  }
+
+  private def isStuck(p:Position):Boolean = {
+    val poses = Vector(p --> Right, p --> Up, p --> Down, p --> Left)
+    poses.forall(isSolid) || isSolid(p)
+  }
+
   def checkMove(p:Position, m:Direction):Position = {
     val newPos = p --> m
-    if (isWorldOob(newPos) || solidReadable(newPos) || solidTree(newPos)) {
+    if (isSolid(newPos)) {
       p.copy(d=m)
     } else {
       p.performMove(m)
     }
+  }
 
+  def checkStuck(p:Position):Position = {
+    var pp = p
+    while (isStuck(pp)) {
+      pp = pp --> p.d
+      if (isRoomOob(pp)) {
+        for (i <- 0 until cols; j <- 0 until rows) {
+          val pos = Position.create(i, j)
+          if (!isStuck(pos)) {
+            return pos
+          }
+        }
+      }
+    }
+    pp
   }
 
   def draw(tr:TileRenderer):TileRenderer = {
-    tr.<++(bg)
+    tr.<+<(terrain.draw)
       .<++<(rds.map {_.draw(0,0) _}) //fixme
       .<++<(cs.map {_.draw _})
   }
 
   def drawFg(tr:TileRenderer):TileRenderer = {
-    tr <++< ts.map {_.draw _}
+    tr <++< ts.map {_.draw _} <++< is.map {_.draw _}
   }
 }

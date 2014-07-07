@@ -10,24 +10,41 @@ import in.dogue.gazophylacium.mode.game.{InTransition, InField, FieldState}
 
 case class Field(m:RoomMap, r:Room, p:Player, t:Option[MessageBox]) {
 
+  def inventory = p.items
   def coords = r.index
 
   private def updateCurrent:Field = {
     val pp = p.update
+    val newT = updateMessage(t)
+    val newP = movePlayer(pp)
+    val (player, room, map) = updateCollect(newP, r.update)
+    copy(p=player, t = newT, r=room, m=map)
+  }
+
+  private def movePlayer(p:Player):Player = {
+    if (t.isEmpty) {
+      val ppos = p.move.map{m => r.checkMove(p.p, m)}.getOrElse(p.p)
+      val unstuck = r.checkStuck(ppos)
+      p.copy(p=unstuck)
+    } else {
+      p
+    }
+  }
+
+  private def updateMessage(t:Option[MessageBox]) = {
     val newT = t.flatMap{_.update}
     val paperOut = Controls.Paper.isPressed
-    val newT2 = if (newT.isEmpty && (Controls.Space.justPressed || paperOut)) {
+    if (newT.isEmpty && (Controls.Space.justPressed || paperOut)) {
       r.checkRead(p.p.x, p.p.y, paperOut)
     } else {
       newT
     }
-    val newP = if (t.isEmpty) {
-      val ppos = p.move.map{m => r.checkMove(p.p, m)}.getOrElse(p.p)
-      pp.copy(p=ppos)
-    } else {
-      p
-    }
-    copy(p=newP, t = newT2, r=r.update)
+  }
+
+  def updateCollect(p:Player, r:Room):(Player, Room, RoomMap) = {
+    val (its, room) = r.checkItem(p.p.x, p.p.y)
+
+    (p.collect(its), room, m.collect(its))
   }
 
   def moveRoom(d:Direction):(Field,Field) = {
@@ -35,7 +52,7 @@ case class Field(m:RoomMap, r:Room, p:Player, t:Option[MessageBox]) {
 
     val newRoom = m(newX, newY)
     newRoom match {
-      case None => ???
+      case None => ??? //fixme
       case Some(room) =>
         val cols = room.cols
         val rows = room.rows

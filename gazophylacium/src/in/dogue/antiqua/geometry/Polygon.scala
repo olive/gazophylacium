@@ -1,4 +1,4 @@
-package in.dogue.antiqua.data
+package in.dogue.antiqua.geometry
 
 import com.deweyvm.gleany.data.Point2d
 import in.dogue.antiqua.Implicits
@@ -9,6 +9,10 @@ object Polygon {
     case a +: b +: c +: rest =>
       new Polygon(lines).some
     case _ => None
+  }
+
+  def fromLines3(l0:Line, l1:Line, l2:Line, rest:Vector[Line]) = {
+    new Polygon(l0 +: l1 +: l2 +: rest)
   }
 
   private var count = BigInt(0)

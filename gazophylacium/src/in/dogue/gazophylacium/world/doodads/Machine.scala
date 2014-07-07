@@ -1,12 +1,13 @@
-package in.dogue.gazophylacium.world
+package in.dogue.gazophylacium.world.doodads
 
-import in.dogue.antiqua.data.{Polygon, Array2d, Code}
+import in.dogue.antiqua.data.{Array2d, Code}
 import in.dogue.antiqua.graphics.{Tile, TileRenderer, Animation}
 import scala.util.Random
 import in.dogue.antiqua.Implicits._
 import com.deweyvm.gleany.graphics.Color
 import com.deweyvm.gleany.data.{Recti, Point2d}
-import in.dogue.gazophylacium.Engine
+import in.dogue.antiqua.geometry.Blob
+
 
 case class MachineTile(c:Code, up:Int, down:Int, left:Int, right:Int) {
   def makeTile(bg:Color, fg:Color) = Tile(c, bg, fg)
@@ -63,41 +64,9 @@ object MachineTile {
 object Machine {
 
 
-  def generateMask(cols:Int, rows:Int, r:Random) = {
-    var found = false
-    var count = 0
-    var poly:Polygon = null
-    var mask:Array2d[Boolean] = null
-    while (!found) {
-      val numPoints = 6
-      val points = (0 until numPoints).map {
-        (i:Int) => Point2d(r.nextInt(cols), r.nextInt(rows))
-      }.sortBy{
-        case pt => Math.atan2(pt.y, pt.x)
-      }
-      Polygon.fromPoints(points.toVector) match {
-        case Some(p) =>
-          poly = p
-          found = true
-        case None =>
-          ()
-      }
-
-      mask = Array2d.tabulate(cols, rows) { case (i, j) =>
-        poly.contains(Point2d(i, j))
-      }
-
-      if (mask.count{case (_, _, b) => b} < cols*2) {
-        found = false
-      }
-      count += 1
-    }
-    mask
-  }
-
   def create(cols:Int, rows:Int, r:Random):Machine = {
-    val mask = generateMask(cols, rows, r)
-
+    val blob = Blob.create(cols, rows, 6, cols*2, r)
+    val mask = blob.mask
 
 
     val seed:Array2d[Option[MachineTile]] = Array2d.tabulate(cols, rows) { case (i, j) =>
@@ -135,26 +104,14 @@ object Machine {
       }
     }.flatten
 
-    Machine(soFlat, getSpan(soFlat), 0)
+    Machine(soFlat, blob.span, 0)
   }
 
-  private def getSpan[T](s:Seq[(Int,Int,T)]) = {
-    var mini = Int.MaxValue
-    var maxi = 0
-    var minj = Int.MaxValue
-    var maxj = 0
-    for ((i, j, t) <- s) {
-      mini = Math.min(i, mini)
-      maxi = Math.max(i, maxi)
-      minj = Math.min(j, minj)
-      maxj = Math.max(j, maxj)
-    }
-    Recti(mini,minj, maxi - mini + 1, maxj - minj + 1)
-  }
+
 
 
   private def maskToTiles(mask:Array2d[Boolean]):Array2d[Option[MachineTile]] = {
-    mask.map { case (i, j, b) =>
+    mask.map { case (_, _, b) =>
       if (b) {
         MachineTile(Code.█, 0, 0, 0, 0).some
       } else {
@@ -216,9 +173,7 @@ case class Machine(tiles:Seq[(Int,Int,Animation)], private val span:Recti, t:Int
   def getRect(i:Int, j:Int):Recti = span + Recti(i, j, 0, 0)
 
   def update:Machine = {
-    val newTiles = tiles.map {case (i, j, k) =>
-      (i, j, k.update)
-    }
+    val newTiles = tiles.smap {_.update}
     copy(tiles=newTiles,t=t+1)
   }
 
@@ -228,8 +183,8 @@ case class Machine(tiles:Seq[(Int,Int,Animation)], private val span:Recti, t:Int
   }
 
   def draw(i:Int, j:Int)(tr:TileRenderer):TileRenderer = {
-    val span = tr.project(getRect(i, j))
-    Engine.r.drawRect(span.x, span.y, span.width, span.height, Color.White)
+    //val span = tr.project(getRect(i, j))
+    //Engine.r.drawRect(span.x, span.y, span.width, span.height, Color.White)
     tr <++< tiles.map { case (p, q, a) =>
       a.drawWithFg(colorPulse(t), i + p, j + q) _
     }

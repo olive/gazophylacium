@@ -12,11 +12,6 @@ case class TileRenderer(draws:Map[(Int,Int), Tile], originX:Int, originY:Int) {
   def att(ij:(Int,Int)) = at(ij._1, ij._2)
   def move(i:Int, j:Int) = copy(originX = originX + i, originY = originY + j)
   def movet(ij:(Int,Int)) = move(ij._1, ij._2)
-  def <+(i:Int, j:Int, tile:Tile) = {
-    val updated = draws.updated((i + originX, j + originY), tile)
-    copy(draws = updated)
-  }
-
   def project(rect:Recti) = Recti(originX, originY, 0, 0) + rect
 
   /**
@@ -58,22 +53,52 @@ case class TileRenderer(draws:Map[(Int,Int), Tile], originX:Int, originY:Int) {
     s.foldLeft(this){ _ `~$>` _}
   }
 
-  def <+~(t:(Int,Int,Tile)) = this.<+ _ tupled t
-  def <+?(t:Option[(Int,Int,Tile)]) = t.map {this <+~ _}.getOrElse(this)
-  def <++(draws:Seq[(Int,Int,Tile)]) = {
+  def <+(i:Int, j:Int, tile:Tile) = {
+    val updated = draws.updated((i + originX, j + originY), tile)
+    copy(draws = updated)
+  }
+
+  def <+~(t:(Int,Int,Tile)): TileRenderer = {
+    val i = t._1
+    val j = t._2
+    val f = t._3
+    <+(i, j, f)
+  }
+
+  def <+?(t:Option[(Int,Int,Tile)]): TileRenderer = {
+    t.map {this <+~ _}.getOrElse(this)
+  }
+  def <++(draws:Seq[(Int,Int,Tile)]): TileRenderer = {
     draws.foldLeft(this) { _ <+~ _}
   }
 
-  def <+<(f:TileRenderer => TileRenderer) = {
+  def <+<(f:TileRenderer => TileRenderer): TileRenderer = {
     f(this)
   }
 
-  def <+?<(f:Option[TileRenderer => TileRenderer]) = {
+  def <+?<(f:Option[TileRenderer => TileRenderer]): TileRenderer = {
     f.foldLeft(this) { _ <+< _}
   }
 
-  def <++<(draws:Seq[TileRenderer => TileRenderer]) = {
+  def <++<(draws:Seq[TileRenderer => TileRenderer]): TileRenderer = {
     draws.foldLeft(this) { _ <+< _}
+  }
+
+  def <#(i:Int, j:Int, a:Animation): (TileRenderer) => TileRenderer = {
+    a.draw(i, j) _
+  }
+
+  def <#~(t:(Int,Int,Animation)) = {
+    val i = t._1
+    val j = t._2
+    val f = t._3
+    <#(i, j, f)
+  }
+
+  def <##(draws:Seq[(Int,Int, Animation)]) = {
+    draws.foldLeft(this) { case (tr, (i, j, a)) =>
+      tr <+< a.draw(i, j)
+    }
   }
 
   /**
@@ -88,6 +113,6 @@ case class TileRenderer(draws:Map[(Int,Int), Tile], originX:Int, originY:Int) {
   }
 
   override def toString:String = {
-    "TileRenderer@(%d,%d) length(%d)" format (originX, originY, draws.count{case (_,_) => true})
+    "TileRenderer@(%d,%d) draws(%d)" format (originX, originY, draws.count{case (_,_) => true})
   }
 }
