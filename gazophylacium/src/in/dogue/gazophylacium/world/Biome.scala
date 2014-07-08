@@ -33,7 +33,9 @@ object Biome {
     val color = TerrainScheme.Burnt
     val critters = Vector(
       Critter.createBug _,
-      Critter.createLizard _
+      Critter.createLizard _,
+      Critter.createBat _,
+      Critter.createDino _
     )
 
     Biome(color, makeTrees, 0, critters)

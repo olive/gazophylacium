@@ -1,19 +1,17 @@
 package in.dogue.gazophylacium.world
 
-import in.dogue.antiqua.graphics.{Animation, Tile, TileRenderer}
+import in.dogue.antiqua.graphics.{Animation, TileRenderer}
 import in.dogue.antiqua.ui.MessageBox
 import in.dogue.antiqua.Implicits._
 import in.dogue.antiqua.data.{Code, Array2d}
-import in.dogue.gazophylacium.input.Controls
 import com.deweyvm.gleany.graphics.Color
 import scala.util.Random
 import scala.collection.mutable.ArrayBuffer
-import com.deweyvm.gleany.data.{Point2d, Recti, Point2i}
+import com.deweyvm.gleany.data.{Recti, Point2i}
 import in.dogue.gazophylacium.data._
 import in.dogue.gazophylacium.world.doodads._
 import in.dogue.antiqua.graphics.Tile
 import scala.Some
-import in.dogue.gazophylacium.world.doodads.Stump
 import in.dogue.gazophylacium.world.doodads.Doodad
 
 
@@ -112,7 +110,9 @@ object Room {
 
   }
 
-  private def makeDoodads(biome:Biome, terrain:Terrain, cols:Int, rows:Int, hasMachine:Boolean, r:Random) = {
+
+
+  private def makeDoodads(dds:Seq[Doodad[_]], biome:Biome, terrain:Terrain, cols:Int, rows:Int, hasMachine:Boolean, r:Random):Seq[Doodad[_]] = {
     val numTrees = 50
     //val trunkColor = Color.Tan.dim(2)
     //val leafColor = Color.Brown.dim(2)
@@ -135,11 +135,11 @@ object Room {
     }
 
     val d = if (hasMachine) {
-      val m = Machine.create(10, 10, r).toDoodad(r.nextInt(cols - 10), r.nextInt(rows - 10))
-      Vector(m)
-    } else {
-      Vector()
-    }
+        val m = Machine.create(10, 10, r).toDoodad(r.nextInt(cols - 10), r.nextInt(rows - 10))
+        Vector(m)
+      } else {
+        Vector()
+      } ++ dds
     for (i <- 0 until numTrees) {
       var found = false
       val t0 = allTrees(i)
@@ -165,15 +165,9 @@ object Room {
       }
       ()
     }
-    rawTrees ++ d :+ Pedestal.create.toDoodad(10,10)
+    rawTrees ++ d
   }
 
-  private def getReadables(r:Random) = {
-    val t = MessageBox.create(20, 10, Vector("This is a test\nText box", "this another"), Controls.Space)
-    val r = MessageBox.create(20, 10, Vector("secret\nsecret\nsecret", "secret\nsecret"), Controls.Space)
-    val rd = Readable(14,14, Tile(Code.☼, Color.Black, Color.Brown), t, r)
-    Seq(rd)
-  }
 
   private def getCritters(biome:Biome, cols:Int, rows:Int, r:Random) = {
     val buff = 6
@@ -183,27 +177,32 @@ object Room {
     Seq(c)
   }
 
-  private def getItems(cols:Int, rows:Int, terrain:Terrain, doodads:Seq[Doodad[_]], items:Seq[ItemFactory], r:Random) = {
+  private def getItems(cols:Int, rows:Int, terrain:Terrain, items:Seq[ItemFactory], r:Random):(Seq[Item], Seq[Doodad[_]], Seq[Readable]) = {
     var found = false
     var pos = Point2i(0,0)
     while (!found) {
       pos = Point2i(r.nextInt(cols), r.nextInt(rows))
-      if (doodads.exists{_.getRect.contains(pos.toPoint2d)} || terrain.isSolid(pos.x, pos.y)){
+      if (terrain.isSolid(pos.x, pos.y)){
 
       } else {
         found = true
       }
     }
-    items.map {_.makeItem(pos.x, pos.y)}
+
+
+    val is = items.map {_.makeItem(pos.x, pos.y)}
+    val ds = items.map { is => Pedestal.create.toDoodad(pos.x-1,pos.y-2)}
+    val rs = items.map { _.makeReadable(pos.x, pos.y-1) }
+    (is, ds, rs)
   }
 
   def createRandom(spec:RoomSpec, worldCols:Int, worldRows:Int, cols:Int, rows:Int, index:Point2i, is:Seq[ItemFactory], r:Random) = {
     val biome = Vector(Biome.Forest, Biome.BurntForest).randomR(r)
     val terrain = generateTerrain(biome, cols, rows, r)
-    val doodads = makeDoodads(biome, terrain, rows, cols, spec.hasMachine, r)
-    val readables = getReadables(r)
+    val (items, ids, irs) = getItems(cols, rows, terrain, is, r)
+    val doodads = makeDoodads(ids, biome, terrain, rows, cols, spec.hasMachine, r)
+    val readables = irs
     val critters = getCritters(biome, cols, rows, r)
-    val items = getItems(cols, rows, terrain, doodads, is, r)
     Room(worldCols, worldRows, cols, rows, index, terrain, readables, doodads.toVector, critters, items)
   }
 }
@@ -329,7 +328,6 @@ case class Room(worldCols:Int, worldRows:Int, cols:Int, rows:Int, index:Point2i,
   def draw(tr:TileRenderer):TileRenderer = {
     tr.<+<(terrain.draw)
       .<++<(ts.map {_.drawBg _})
-      .<++<(rds.map {_.draw(0,0) _}) //fixme
       .<++<(cs.map {_.draw _})
   }
 

@@ -7,8 +7,8 @@ import com.deweyvm.gleany.graphics.Color
 
 object RoomMap {
   def load(roomCols:Int, roomRows:Int) = {
-    val cols = 3
-    val rows = 3
+    val cols = 5
+    val rows = 5
 
     val r = new Random(0)
     val specs = RoomSpec.makeSpecs(cols, rows)
@@ -26,18 +26,12 @@ object RoomMap {
   def createItems = {
 
     Vector(
-      ItemFactory(Code.¶, Color.Cyan),
-      ItemFactory(Code.┼, Color.Tan),
-      ItemFactory(Code.÷, Color.Red),
-      ItemFactory(Code.`¢`, Color.Grey),
-      ItemFactory(Code.τ, Color.White),
-      ItemFactory(Code.§, Color.Yellow)
-
-    )
-  }
-
-  def createReadabels = {
-    Vector(
+      ItemFactory(Code.¶, Color.Cyan, Vector(""), Vector("")),
+      ItemFactory(Code.┼, Color.Tan, Vector(""), Vector("")),
+      ItemFactory(Code.÷, Color.Red, Vector(""), Vector("")),
+      ItemFactory(Code.`¢`, Color.Grey, Vector(""), Vector("")),
+      ItemFactory(Code.τ, Color.White, Vector(""), Vector("")),
+      ItemFactory(Code.§, Color.Yellow, Vector(""), Vector(""))
 
     )
   }

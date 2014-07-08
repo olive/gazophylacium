@@ -39,11 +39,41 @@ object Critter {
   }
 
   def createFrog(i:Int, j:Int, roamSize:Int, r:Random) = {
-    simpleAnimal(Color.Brown, Code.ö, Code.Ö_u, 15)(i, j, roamSize, 0.99, r)
+    def mkTile(c:Code) = Tile(c, Color.Black, Color.Green)
+    val headAnim = Animation.create(Vector(
+      (30, mkTile(Code.Ö_u)),
+      (3, mkTile(Code.ö))
+    ))
+    val body = Seq(
+      (0, 0, Animation.singleton(mkTile(Code.`≤`))),
+      (1, 0, headAnim),
+      (2, 0, Animation.singleton(mkTile(Code.`≥`)))
+
+    )
+    Critter.create(i, j, body, roamSize, 0.99, r)
   }
 
   def createDragonfly(i:Int, j:Int, roamSize:Int, r:Random) = {
-    simpleAnimal(Color.Red, Code.æ, Code.`¡`, 3)(i, j, roamSize, 0.8, r)
+    val bg = Color.Black
+    val fg = Color.Red
+    def mkTile(c:Code) = Tile(c, bg, fg)
+    val rwing = Animation.create(Vector(
+      (3, mkTile(Code.<)),
+      (3, mkTile(Code.`«`))
+
+    ))
+    val lwing = Animation.create(Vector(
+      (3, mkTile(Code.>)),
+      (3, mkTile(Code.`»`))
+    ))
+    val head = Animation.singleton(mkTile(Code.`¡`))
+    val body = Seq(
+      (0, 0, lwing),
+      (1, 0, head),
+      (2, 0, rwing)
+
+    )
+    Critter.create(i, j, body, roamSize, 0.80, r)
   }
 
   def createBird(i:Int, j:Int, roamSize:Int, r:Random) = {
@@ -54,12 +84,35 @@ object Critter {
     simpleAnimal(Color.Green, Code.~, Code.-, 15)(i, j, roamSize, 0.99, r)
   }
 
+  def createBat(i:Int, j:Int, roamSize:Int, r:Random) = {
+    val bg = Color.Black
+    val fg = Color.Tan
+    def mkTile(c:Code) = Tile(c, bg, fg)
+    val lwing = Animation.create(Vector(
+      (30, mkTile(Code.^)),
+      (30, mkTile(Code.⌐))
+    ))
+    val rwing = Animation.create(Vector(
+      (30, mkTile(Code.^)),
+      (30, mkTile(Code.¬))
+    ))
+    val head = Animation.singleton(mkTile(Code.°))
+    val body = Seq(
+      (0, 0, lwing),
+      (1, 0, head),
+      (2, 0, rwing)
+
+    )
+    Critter.create(i, j, body, roamSize, 0.99, r)
+  }
+
   def createLizard(i:Int, j:Int, roamSize:Int, r:Random) = {
     val bg = Color.Black
     val fg = Color.LightGreen
-    val leg0_0 = Tile(Code.`[`, bg, fg)
-    val leg0_1 = Tile(Code.│, bg, fg)
-    val leg0_2 = Tile(Code.`]`, bg, fg)
+    def mkTile(c:Code) = Tile(c, bg, fg)
+    val leg0_0 = mkTile(Code.`[`)
+    val leg0_1 = mkTile(Code.│)
+    val leg0_2 = mkTile(Code.`]`)
     val legAnim0 = Animation.create(Vector(
       (23, leg0_0),
       (61, leg0_1),
@@ -70,8 +123,8 @@ object Critter {
       (61, leg0_1),
       (15, leg0_2)
     ))
-    val trunk = Animation.create(Vector((1, Tile(Code.`=`, bg, fg))))
-    val head = Animation.create(Vector((1, Tile(Code.`º`, bg, fg))))
+    val trunk = Animation.singleton(mkTile(Code.`=`))
+    val head = Animation.singleton(mkTile(Code.`º`))
     val body = Seq(
       (0, 0, legAnim0),
       (1, 0, trunk),
@@ -81,6 +134,41 @@ object Critter {
     )
     Critter.create(i, j, body, roamSize, 0.99, r)
   }
+
+  def createDino(i:Int, j:Int, roamSize:Int, r:Random) = {
+    val bg = Color.Black
+    val fg = Color.Grey
+    def mkTile(c:Code) = Tile(c, bg, fg)
+
+    val tail = Animation.create(Vector(
+      (17, mkTile(Code.~)),
+      (13, mkTile(Code.-))
+    ))
+    val body = Animation.singleton(mkTile(Code.`=`))
+    val foot = Animation.create(Vector(
+      (19, mkTile(Code.-)),
+      (19, mkTile(Code.^))
+    ))
+
+    val eye = Animation.singleton(mkTile(Code.°))
+    val mouth = Animation.create(Vector(
+      (3, mkTile(Code.-)),
+      (61, mkTile(Code.<))
+    ))
+
+    val all = Seq(
+      (0, 0, tail),
+      (1, 0, body),
+      (2, 0, body),
+      (3, 0, eye),
+      (4, 0, mouth),
+      (1, 1, foot),
+      (3, 1, foot)
+
+    )
+    Critter.create(i, j, all, roamSize, 0.99, r)
+  }
+
 
 }
 

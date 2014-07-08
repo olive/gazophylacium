@@ -35,13 +35,13 @@ object Pedestal {
     val bg = Vector(
       (1, 3, Animation.singleton(Tile(Code.`=`, bgc, fgc)))
     )
-    Pedestal(flat.flatten, bg)
+    Pedestal(flat.flatten, bg, 0)
   }
 }
-case class Pedestal(fg:Seq[(Int,Int,Animation)], bg:Seq[(Int,Int,Animation)]) {
+case class Pedestal(fg:Seq[(Int,Int,Animation)], bg:Seq[(Int,Int,Animation)], t:Int) {
   final val width = 3
   final val height = 4
-  def update = this
+  def update = copy(t=t+1)
   def getRect(i:Int, j:Int) = {
     Recti(i, j, width, height)
   }
@@ -56,13 +56,22 @@ case class Pedestal(fg:Seq[(Int,Int,Animation)], bg:Seq[(Int,Int,Animation)]) {
     getRect(i, j).contains(pt) && !goodRect(i, j).contains(pt)
   }
 
+  private def colorPulse(t:Int):Color = {
+    val dim = Math.abs(Math.sin(t / 120f)*2)
+    Color.Yellow.dim(dim.toFloat)
+  }
+
   def drawBg(i:Int, j:Int)(tr:TileRenderer):TileRenderer = {
     tr <## (bg |+| (i, j))
   }
 
   def draw(i:Int, j:Int)(tr:TileRenderer):TileRenderer = {
-    tr <## (fg |+| (i, j))
+    //tr <## (fg |+| (i, j))
+    tr <++< fg.map { case (p, q, a) =>
+      a.drawWithFg(colorPulse(t), i + p, j + q) _
+    }
   }
+
   def toDoodad(i:Int, j:Int) = {
     Doodad[Pedestal](i, j, _.draw, _.drawBg, _.getRect, _.isSolid, _.update, this)
   }
