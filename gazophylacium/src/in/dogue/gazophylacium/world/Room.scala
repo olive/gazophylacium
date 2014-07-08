@@ -165,12 +165,13 @@ object Room {
       }
       ()
     }
-    rawTrees ++ d
+    rawTrees ++ d :+ Pedestal.create.toDoodad(10,10)
   }
 
   private def getReadables(r:Random) = {
     val t = MessageBox.create(20, 10, Vector("This is a test\nText box", "this another"), Controls.Space)
-    val rd = Readable(14,14, Tile(Code.☼, Color.Black, Color.Brown), t)
+    val r = MessageBox.create(20, 10, Vector("secret\nsecret\nsecret", "secret\nsecret"), Controls.Space)
+    val rd = Readable(14,14, Tile(Code.☼, Color.Black, Color.Brown), t, r)
     Seq(rd)
   }
 
@@ -327,11 +328,12 @@ case class Room(worldCols:Int, worldRows:Int, cols:Int, rows:Int, index:Point2i,
 
   def draw(tr:TileRenderer):TileRenderer = {
     tr.<+<(terrain.draw)
+      .<++<(ts.map {_.drawBg _})
       .<++<(rds.map {_.draw(0,0) _}) //fixme
       .<++<(cs.map {_.draw _})
   }
 
   def drawFg(tr:TileRenderer):TileRenderer = {
-    tr <++< ts.map {_.draw _} <++< is.map {_.draw _}
+    tr <++< ts.map {_.drawFg _} <++< is.map {_.draw _}
   }
 }

@@ -35,6 +35,12 @@ object RoomMap {
 
     )
   }
+
+  def createReadabels = {
+    Vector(
+
+    )
+  }
 }
 
 case class RoomMap(rooms:Array2d[Room], infos:Array2d[RoomInfo]) {

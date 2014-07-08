@@ -5,7 +5,8 @@ import com.deweyvm.gleany.data.Recti
 
 case class Doodad[T](i:Int,
                      j:Int,
-                     f:T => (Int,Int) => TileRenderer => TileRenderer,
+                     fg:T => (Int,Int) => TileRenderer => TileRenderer,
+                     bg:T => (Int,Int) => TileRenderer => TileRenderer,
                      rect:T => (Int,Int) => Recti,
                      solid:T => (Int,Int) => (Int,Int) => Boolean,
                      up:T => T,
@@ -17,5 +18,6 @@ case class Doodad[T](i:Int,
   def isSolid(p:Int, q:Int) = solid(t)(i, j)(p, q)
   def update:Doodad[T] = copy(t=up(t))
   def getRect:Recti = rect(t)(i, j)
-  def draw(tr:TileRenderer):TileRenderer = tr <+< f(t)(i, j)
+  def drawBg(tr:TileRenderer):TileRenderer = tr <+< bg(t)(i, j)
+  def drawFg(tr:TileRenderer):TileRenderer = tr <+< fg(t)(i, j)
 }

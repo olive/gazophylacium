@@ -18,12 +18,14 @@ case class Stump(color:Color)(r:Random) {
   def isSolid(i:Int, j:Int)(p:Int, q:Int) = {
     p == i && q == j
   }
-
+  def drawBg(i: Int, j: Int)(tr: TileRenderer): TileRenderer = {
+    tr
+  }
   def draw(i:Int, j:Int)(tr:TileRenderer):TileRenderer = {
     tr <| (i, j, sprite)
   }
 
   def toDoodad(i:Int, j:Int):Doodad[Stump] = {
-    Doodad(i, j, _.draw _, _.getRect, _.isSolid _, id[Stump], this)
+    Doodad(i, j, _.draw, _.drawBg, _.getRect, _.isSolid _, id[Stump], this)
   }
 }

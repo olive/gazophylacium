@@ -24,12 +24,16 @@ case class DeadTree(color:Color)(r:Random) {
     p == i && q == j + height - 1
   }
 
+  def drawBg(i: Int, j: Int)(tr: TileRenderer): TileRenderer = {
+    tr
+  }
+
   def draw(i: Int, j: Int)(tr: TileRenderer): TileRenderer = {
     val ss = sprites.zipWithIndex.map { case (s:Tile, k:Int) => (i, j + k, s)}
     tr <|| ss
   }
 
   def toDoodad(i: Int, j: Int): Doodad[DeadTree] = {
-    Doodad(i, j, _.draw _, _.getRect, _.isSolid _, id[DeadTree], this)
+    Doodad(i, j, _.draw, _.drawBg, _.getRect, _.isSolid _, id[DeadTree], this)
   }
 }

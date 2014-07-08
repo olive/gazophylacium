@@ -182,6 +182,10 @@ case class Machine(tiles:Seq[(Int,Int,Animation)], private val span:Recti, t:Int
     Color.Red.dim(dim.toFloat)
   }
 
+  def drawBg(i: Int, j: Int)(tr: TileRenderer): TileRenderer = {
+    tr
+  }
+
   def draw(i:Int, j:Int)(tr:TileRenderer):TileRenderer = {
     //val span = tr.project(getRect(i, j))
     //Engine.r.drawRect(span.x, span.y, span.width, span.height, Color.White)
@@ -195,6 +199,6 @@ case class Machine(tiles:Seq[(Int,Int,Animation)], private val span:Recti, t:Int
   }
 
   def toDoodad(i:Int, j:Int):Doodad[Machine] = {
-    Doodad(i, j, _.draw, _.getRect, _.isSolid, _.update, this)
+    Doodad(i, j, _.draw, _.drawBg, _.getRect, _.isSolid, _.update, this)
   }
 }

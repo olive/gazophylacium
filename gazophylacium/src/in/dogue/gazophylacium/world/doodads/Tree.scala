@@ -83,6 +83,10 @@ case class Tree(trunkBase:Color, leafBase:Color)(r:Random) {
     Position.create(i + 1, j + height - 1)
   }
 
+  def drawBg(i: Int, j: Int)(tr: TileRenderer): TileRenderer = {
+    tr
+  }
+
   def draw(i:Int, j:Int)(tr:TileRenderer):TileRenderer = {
     //val span = tr.project(getRect(i, j))
     //Engine.r.drawRect(span.x, span.y, span.width, span.height, Color.White)
@@ -95,7 +99,7 @@ case class Tree(trunkBase:Color, leafBase:Color)(r:Random) {
   }
 
   def toDoodad(i:Int, j:Int) = {
-    Doodad[Tree](i, j, _.draw, _.getRect, _.isSolid, id[Tree], this)
+    Doodad[Tree](i, j, _.draw, _.drawBg, _.getRect, _.isSolid, id[Tree], this)
   }
 
 }
