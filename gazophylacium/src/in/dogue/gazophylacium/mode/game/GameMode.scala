@@ -6,15 +6,17 @@ import in.dogue.antiqua.graphics.TileRenderer
 import in.dogue.gazophylacium.ui.Hud
 import com.deweyvm.gleany.data.Point2i
 import in.dogue.gazophylacium.world.Field
+import scala.util.Random
 
 object GameMode {
   def create(cols:Int, rows:Int) = {
+    val r = new Random(0)
     val p = Player.create(7,7)
-    val roomMap = RoomMap.load(cols, rows)
+    val roomMap = RoomMap.load(cols, rows, r)
     val start = Point2i(0,0)
-    val r = roomMap(start.x, start.y).get
-    val hud = Hud.create(cols, 4)
-    val field = Field(roomMap, r, p, None)
+    val rm = roomMap(start.x, start.y).get
+    val hud = Hud.create(cols, 4, r)
+    val field = Field(roomMap, rm, p, None)
     GameMode(cols, rows, InField(field), hud)
   }
 }

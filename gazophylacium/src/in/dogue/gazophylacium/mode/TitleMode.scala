@@ -3,10 +3,11 @@ package in.dogue.gazophylacium.mode
 import in.dogue.gazophylacium.input.Controls
 import in.dogue.gazophylacium.mode.game.GameMode
 import in.dogue.antiqua.graphics.{TileRenderer, TextFactory, Border}
+import com.deweyvm.gleany.graphics.Color
 
 class TitleMode(cols:Int, rows:Int) extends Mode {
   val tf = TextFactory.bw
-  val b = Border.standard(cols, rows)
+  val b = Border.standard(Color.Black, Color.White)(cols, rows)
   val t = tf.create("»GAZOPHYLACIUM")
   def update = {
     if (Controls.Space.justPressed) {

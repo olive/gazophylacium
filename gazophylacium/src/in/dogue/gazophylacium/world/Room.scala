@@ -192,7 +192,7 @@ object Room {
 
     val is = items.map {_.makeItem(pos.x, pos.y)}
     val ds = items.map { is => Pedestal.create.toDoodad(pos.x-1,pos.y-2)}
-    val rs = items.map { _.makeReadable(pos.x, pos.y-1) }
+    val rs = items.map { _.makeReadable(pos.x, pos.y-1, 25, 10, r) }
     (is, ds, rs)
   }
 

@@ -7,6 +7,8 @@ import in.dogue.antiqua.Implicits._
 import com.deweyvm.gleany.input.Control
 import in.dogue.antiqua.data.Code
 import in.dogue.gazophylacium.input.Controls
+import in.dogue.gazophylacium.world.Room.ColorScheme
+import scala.util.Random
 
 object Line {
   def create(v:Text) = Line(v, 0)
@@ -15,7 +17,7 @@ case class Line(v:Text, ptr:Int) {
   def isFinished = ptr >= v.length
   def update = copy(ptr=Math.min(v.length, ptr+1))
   def draw(i:Int, j:Int)(tr:TileRenderer):TileRenderer = {
-    tr <+< v.drawSub(ptr)(i, j)
+    tr <+< v.drawFgSub(ptr)(i, j)
   }
 }
 
@@ -47,21 +49,45 @@ case class TextBox(lines:Vector[Line], ptr:Int) {
 
 object MessageBox {
 
-  def createSpace(cols:Int, rows:Int, xs:Vector[String]) = {
-    create(cols, rows, xs, Controls.Space)
+  def createSpace(cols:Int, rows:Int, xs:Vector[String], bcs:BoxColorScheme, rect:Rect, r:Random) = {
+    create(cols, rows, xs, rect, bcs, Controls.Space, r)
   }
 
-  def create(cols:Int, rows:Int, xs:Vector[String], progress:Control[Boolean]):MessageBox = {
-    val f = TextFactory(Color.Black, Color.White)
-    val b = Border.standard(cols, rows)
+  def createPlain(cols:Int, rows:Int, xs:Vector[String], bcs:BoxColorScheme, progress:Control[Boolean], r:Random) = {
+    val bg = Rect.createPlain(cols, rows, Tile(Code.` `, Color.Blue, Color.Blue))
+    create(cols, rows, xs, bg, bcs, progress, r)
+  }
+
+  private def create(cols:Int, rows:Int, xs:Vector[String], rect:Rect, bcs:BoxColorScheme, progress:Control[Boolean], r:Random): MessageBox = {
+    val textColor = bcs.text.getColor(r)
+    val f = TextFactory(Color.Black, textColor)
+    val b = Border.standard(bcs.bg.getColor(r), bcs.text.getColor(r))(cols, rows)
     val boxes = xs map {_.split("\n").toVector}
     val all = boxes map {b => TextBox(b.map(bb => Line.create(f.create(bb))), 0)}
     val arrow = f.create("▼")
-    val bg = Rect.create(cols, rows, Tile(Code.` `, Color.Blue, Color.Blue))
-    MessageBox(all, bg, b, 0, arrow, progress, Intro(0), 0)
+    MessageBox(all, rect, b, 0, arrow, progress, Intro(0), 0)
 
   }
 }
+
+
+object BoxColorScheme {
+  val standard = {
+    val border = ColorScheme(Vector(Color.Grey), 1, 1)
+    val bg = ColorScheme(Vector(Color.DarkGrey), 1, 1)
+    val text = border
+    BoxColorScheme(border, bg, text)
+  }
+
+  val page = {
+    val border = ColorScheme(Vector(Color.DarkGreen), 3, 1)
+    val bg = ColorScheme(Vector(Color.DarkGreen), 3, 1)
+    val text = ColorScheme(Vector(Color.Green), 1, 1)
+    BoxColorScheme(border, bg, text)
+  }
+}
+
+case class BoxColorScheme(border:ColorScheme, bg:ColorScheme, text:ColorScheme)
 
 
 sealed trait BoxState
@@ -120,7 +146,7 @@ case class MessageBox(bs:Vector[TextBox], bg:Rect, b:Border, ptr:Int, arrow:Text
 
   private def drawArrow(tr:TileRenderer):TileRenderer = {
     if (last.isFinished && ptr < bs.length - 1 && t % 30 < 15) {
-      tr <+< arrow.draw(b.cols-2,b.rows-2)
+      tr <+< arrow.drawFgSub(1)(b.cols-2,b.rows-2)
     } else {
       tr
     }

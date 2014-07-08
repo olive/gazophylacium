@@ -5,7 +5,7 @@ import in.dogue.antiqua.data.Code
 import in.dogue.antiqua.Implicits._
 
 object Border {
-  val standard = Border(Code.║, Code.═, Code.╔, Code.╗, Code.╚, Code.╝)(Color.Black, Color.White) _
+  def standard(bg:Color, fg:Color) = Border(Code.║, Code.═, Code.╔, Code.╗, Code.╚, Code.╝)(bg, fg) _
 }
 
 

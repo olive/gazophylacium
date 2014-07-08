@@ -6,11 +6,10 @@ import scala.util.Random
 import com.deweyvm.gleany.graphics.Color
 
 object RoomMap {
-  def load(roomCols:Int, roomRows:Int) = {
-    val cols = 5
-    val rows = 5
+  def load(roomCols:Int, roomRows:Int, r:Random) = {
+    val cols = 3
+    val rows = 3
 
-    val r = new Random(0)
     val specs = RoomSpec.makeSpecs(cols, rows)
     val indices: Map[(Int, Int), ItemFactory] = r.shuffle(for (i <- 0 until cols; j <- 0 until rows) yield (i, j)).take(6).zip(createItems).toMap
     val rooms = specs.map { case (i, j, s) =>
@@ -24,14 +23,15 @@ object RoomMap {
   }
 
   def createItems = {
-
+    val dummy = "Dummy\n dummy dummy\n dummy dummy dunmmy"
+    val secret = "secret\n secret secret\n secret secretsecret"
     Vector(
-      ItemFactory(Code.¶, Color.Cyan, Vector(""), Vector("")),
-      ItemFactory(Code.┼, Color.Tan, Vector(""), Vector("")),
-      ItemFactory(Code.÷, Color.Red, Vector(""), Vector("")),
-      ItemFactory(Code.`¢`, Color.Grey, Vector(""), Vector("")),
-      ItemFactory(Code.τ, Color.White, Vector(""), Vector("")),
-      ItemFactory(Code.§, Color.Yellow, Vector(""), Vector(""))
+      ItemFactory(Code.¶, Color.Cyan, Vector(dummy, dummy), Vector(secret)),
+      ItemFactory(Code.┼, Color.Tan, Vector(dummy, dummy), Vector(secret)),
+      ItemFactory(Code.±, Color.Blue, Vector(dummy, dummy), Vector(secret)),
+      ItemFactory(Code.`.`, Color.Yellow, Vector(dummy, dummy), Vector(secret)),
+      ItemFactory(Code.τ, Color.Grey, Vector(dummy, dummy), Vector(secret)),
+      ItemFactory(Code.⌠, Color.Brown, Vector(dummy, dummy), Vector(secret))
 
     )
   }

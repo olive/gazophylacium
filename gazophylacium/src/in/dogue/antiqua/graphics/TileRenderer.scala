@@ -85,7 +85,7 @@ case class TileRenderer(draws:Map[(Int,Int), Tile], originX:Int, originY:Int) {
   }
 
   def <#(i:Int, j:Int, a:Animation): (TileRenderer) => TileRenderer = {
-    a.draw(i, j) _
+    a.draw(i, j)
   }
 
   def <#~(t:(Int,Int,Animation)) = {

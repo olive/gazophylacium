@@ -16,4 +16,12 @@ case class Text(tiles:Vector[Tile], f:TextFactory)  {
   def drawSub(index:Int)(i:Int, j:Int)(r:TileRenderer):TileRenderer = {
     r <++ tiles.take(index).zipWithIndex.map{case (t, k) => (i + k, j, t)}
   }
+
+  def drawFg(i:Int, j:Int)(r:TileRenderer):TileRenderer = {
+    drawFgSub(tiles.length)(i, j)(r)
+  }
+
+  def drawFgSub(index:Int)(i:Int, j:Int)(r:TileRenderer):TileRenderer = {
+    r <|| tiles.take(index).zipWithIndex.map{case (t, k) => (i + k, j, t)}
+  }
 }

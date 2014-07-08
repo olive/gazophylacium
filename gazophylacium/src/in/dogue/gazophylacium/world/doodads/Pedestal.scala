@@ -66,7 +66,6 @@ case class Pedestal(fg:Seq[(Int,Int,Animation)], bg:Seq[(Int,Int,Animation)], t:
   }
 
   def draw(i:Int, j:Int)(tr:TileRenderer):TileRenderer = {
-    //tr <## (fg |+| (i, j))
     tr <++< fg.map { case (p, q, a) =>
       a.drawWithFg(colorPulse(t), i + p, j + q) _
     }
