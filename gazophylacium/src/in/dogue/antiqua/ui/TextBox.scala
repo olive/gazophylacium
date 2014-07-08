@@ -11,11 +11,22 @@ import in.dogue.gazophylacium.world.Room.ColorScheme
 import scala.util.Random
 
 object Line {
-  def create(v:Text) = Line(v, 0)
+  def create(v:Text, sound:() => Unit) = Line(v, sound, 0, 0)
 }
-case class Line(v:Text, ptr:Int) {
+case class Line(v:Text, sound: () => Unit, ptr:Int, t:Int) {
+  val speed = 2
   def isFinished = ptr >= v.length
-  def update = copy(ptr=Math.min(v.length, ptr+1))
+  def update = {
+    val (newT, newPtr) = if (t > speed) {
+      if (ptr < v.length && v.tiles(ptr).code != Code.` `) {
+        sound()
+      }
+      (0, ptr+1)
+    } else {
+      (t+1, ptr)
+    }
+    copy(ptr=Math.min(v.length, newPtr), t=newT)
+  }
   def draw(i:Int, j:Int)(tr:TileRenderer):TileRenderer = {
     tr <+< v.drawFgSub(ptr)(i, j)
   }
@@ -49,23 +60,30 @@ case class TextBox(lines:Vector[Line], ptr:Int) {
 
 object MessageBox {
 
-  def createSpace(cols:Int, rows:Int, xs:Vector[String], bcs:BoxColorScheme, rect:Rect, r:Random) = {
-    create(cols, rows, xs, rect, bcs, Controls.Space, r)
+  def createSpace(cols:Int, rows:Int, xs:Vector[String], bcs:BoxColorScheme, rect:Rect,
+                  letterSound:() => Unit,
+                  boxSound:BoxState => Unit,
+                  r:Random) = {
+    create(cols, rows, xs, rect, bcs, Controls.Space, letterSound, boxSound, r)
   }
 
-  def createPlain(cols:Int, rows:Int, xs:Vector[String], bcs:BoxColorScheme, progress:Control[Boolean], r:Random) = {
+  def createPlain(cols:Int, rows:Int, xs:Vector[String], bcs:BoxColorScheme, progress:Control[Boolean],
+                  letterSound:() => Unit,
+                  boxSound:BoxState => Unit,
+                  r:Random) = {
     val bg = Rect.createPlain(cols, rows, Tile(Code.` `, Color.Blue, Color.Blue))
-    create(cols, rows, xs, bg, bcs, progress, r)
+    create(cols, rows, xs, bg, bcs, progress, letterSound, boxSound, r)
   }
 
-  private def create(cols:Int, rows:Int, xs:Vector[String], rect:Rect, bcs:BoxColorScheme, progress:Control[Boolean], r:Random): MessageBox = {
+  private def create(cols:Int, rows:Int, xs:Vector[String], rect:Rect, bcs:BoxColorScheme, progress:Control[Boolean], letterSound:() => Unit, boxSound: BoxState => Unit, r:Random): MessageBox = {
     val textColor = bcs.text.getColor(r)
     val f = TextFactory(Color.Black, textColor)
     val b = Border.standard(bcs.bg.getColor(r), bcs.text.getColor(r))(cols, rows)
     val boxes = xs map {_.split("\n").toVector}
-    val all = boxes map {b => TextBox(b.map(bb => Line.create(f.create(bb))), 0)}
+    val all = boxes map {b => TextBox(b.map(bb => Line.create(f.create(bb), letterSound)), 0)}
     val arrow = f.create("▼")
-    MessageBox(all, rect, b, 0, arrow, progress, Intro(0), 0)
+    val initialState = Start
+    MessageBox(all, rect, b, 0, arrow, progress, initialState, initialState, 0, boxSound)
 
   }
 }
@@ -90,13 +108,26 @@ object BoxColorScheme {
 case class BoxColorScheme(border:ColorScheme, bg:ColorScheme, text:ColorScheme)
 
 
-sealed trait BoxState
-case class Intro(t:Int) extends BoxState
-case object Reading extends BoxState
-case class Outro(t:Int) extends BoxState
-case object Done extends BoxState
+sealed trait BoxState {
+  val id:Int
+}
+case object Start extends BoxState {
+  val id = 0
+}
+case class Intro(t:Int) extends BoxState {
+  val id = 1
+}
+case object Reading extends BoxState {
+  val id = 2
+}
+case class Outro(t:Int) extends BoxState {
+  val id = 3
+}
+case object Done extends BoxState {
+  val id = 4
+}
 
-case class MessageBox(bs:Vector[TextBox], bg:Rect, b:Border, ptr:Int, arrow:Text, progress:Control[Boolean], state:BoxState, t:Int) {
+case class MessageBox(bs:Vector[TextBox], bg:Rect, b:Border, ptr:Int, arrow:Text, progress:Control[Boolean], prevState:BoxState, state:BoxState, t:Int, sound: BoxState => Unit) {
   val speed=1
   def isFinished = bs(ptr).isFinished && ptr >= bs.length - 1
 
@@ -106,25 +137,32 @@ case class MessageBox(bs:Vector[TextBox], bg:Rect, b:Border, ptr:Int, arrow:Text
     bs.updated(ptr, last.update)
   }
 
+  private def updateState(s:BoxState) = {
+    if (s.id != state.id) {
+      sound(s)
+    }
+    copy(prevState=state, state=s)
+  }
+
   private def updateIntro(i:Intro):MessageBox = {
     if (i.t/speed >= (b.cols + b.rows) - 1) {
-      copy(state=Reading)
+      updateState(Reading)
     } else {
-      copy(state=Intro(i.t + 1))
+      updateState(Intro(i.t + 1))
     }
   }
 
   private def updateOutro(o:Outro):MessageBox = {
     if (o.t/speed > (b.cols + b.rows)) {
-      copy(state=Done)
+      updateState(Done)
     } else {
-      copy(state=Outro(o.t + 1))
+      updateState(Outro(o.t + 1))
     }
   }
 
   private def updateBox:MessageBox = {
     val next = if (isFinished && progress.justPressed) {
-      copy(state=Outro(0))
+      updateState(Outro(0))
     } else {
       if (last.isFinished && progress.justPressed) {
         copy(ptr = ptr+1)
@@ -137,6 +175,7 @@ case class MessageBox(bs:Vector[TextBox], bg:Rect, b:Border, ptr:Int, arrow:Text
 
   def update:Option[MessageBox] = {
     state match {
+      case Start => updateState(Intro(0)).some
       case i@Intro(_) => updateIntro(i).some
       case Reading => updateBox.some
       case o@Outro(_) => updateOutro(o).some
@@ -168,6 +207,7 @@ case class MessageBox(bs:Vector[TextBox], bg:Rect, b:Border, ptr:Int, arrow:Text
 
   def draw(i:Int, j:Int)(tr:TileRenderer):TileRenderer = {
     tr <+< (state match {
+      case Start => (tr:TileRenderer) => tr
       case in@Intro(_) => drawIntro(i, j, in)
       case Reading => drawBox(i, j)
       case o@Outro(_) => drawOutro(i, j, o)

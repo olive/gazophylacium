@@ -1,38 +1,51 @@
 package in.dogue.gazophylacium.world
 
-import in.dogue.antiqua.data.{Code, Array2d}
+import in.dogue.antiqua.data.{Rot13, Code, Array2d}
 import com.deweyvm.gleany.data.Point2i
 import scala.util.Random
 import com.deweyvm.gleany.graphics.Color
 
 object RoomMap {
   def load(roomCols:Int, roomRows:Int, r:Random) = {
-    val cols = 3
-    val rows = 3
+    val cols = 4
+    val rows = 4
+    val items = createItems
+    val last = items.last.makeItem(0,0)
+    val collectable = items
+    val randIndices = r.shuffle(for (i <- 0 until cols; j <- 0 until rows) yield (i, j))
+    val itemIndices: Map[(Int, Int), ItemFactory] = randIndices.take(collectable.length).zip(collectable).toMap
+    val machineIndex = randIndices.drop(collectable.length).head
 
-    val specs = RoomSpec.makeSpecs(cols, rows)
-    val indices: Map[(Int, Int), ItemFactory] = r.shuffle(for (i <- 0 until cols; j <- 0 until rows) yield (i, j)).take(6).zip(createItems).toMap
+    val specs = RoomSpec.makeSpecs(cols, rows, machineIndex)
+
     val rooms = specs.map { case (i, j, s) =>
-      val items = indices.get((i, j)).map { t => Seq(t) }.getOrElse(Seq())
+      val items = itemIndices.get((i, j)).map { t => Seq(t) }.getOrElse(Seq())
       s.createRoom(cols, rows, roomCols, roomRows, Point2i(i, j), items, r)
     }
     val infos = Array2d.tabulate(cols, rows) { case (i, j) =>
-      RoomInfo(Seq())
+      RoomInfo(Seq(last))
     }
     RoomMap(rooms, infos)
   }
 
   def createItems = {
     val dummy = "Dummy\n dummy dummy\n dummy dummy dunmmy"
-    val secret = "secret\n secret secret\n secret secretsecret"
+    import Rot13._
+    val box0 = Vector("Gur Culynpgrel","Gur cbffvoyvgl\nbs rgreany yvsr.","Jung jvyy lbh\nfnpevsvpr\ngb svaq vg?","Qrngu\njvyy fgvyy\npbzr sbe lbh.").map(rot13)
+    val box1 = Vector("Gur Pebff","Gjb ebnqf zrrg\nnaq gura qviretr.","Juvpu cngu\njvyy lbh gnxr?").map(rot13)
+    val box2 = Vector("Gur Fpnyrf","Jung vf snve?","Jung vf whfg?","Jung vf rabhtu?").map(rot13)
+    val box3 = Vector("Gur Pbva","Genqr gevaxrgf\nsbe gvzr.","Genqr gvzr\nsbe gevaxrgf.","Gur gevaxrgf\njvyy bhgynfg lbh.").map(rot13)
+    val box4 = Vector("Gur Gbnqfgbby","Vg znl tvir\nyvsr fhfgnvavat\nabhevfuzrag-","-be n fjvsg qrngu.","Jung qb lbh\njvfu sbe?").map(rot13)
+    val box5 = Vector("Gur Fgnss","Furcureq gubfr\njub jbhyq sbyybj lbh.","Jurer jvyy\nlbh yrnq gurz?").map(rot13)
+    val box6 = Vector("Gur Cntr","N oynax fyngr.","Perngr\nlbhe bja havirefr.","N qbbqyr.").map(rot13)
     Vector(
-      ItemFactory(Code.¶, Color.Cyan, Vector(dummy, dummy), Vector(secret)),
-      ItemFactory(Code.┼, Color.Tan, Vector(dummy, dummy), Vector(secret)),
-      ItemFactory(Code.±, Color.Blue, Vector(dummy, dummy), Vector(secret)),
-      ItemFactory(Code.`.`, Color.Yellow, Vector(dummy, dummy), Vector(secret)),
-      ItemFactory(Code.τ, Color.Grey, Vector(dummy, dummy), Vector(secret)),
-      ItemFactory(Code.⌠, Color.Brown, Vector(dummy, dummy), Vector(secret))
-
+      ItemFactory(Code.¶, Color.Cyan, 0, Vector(dummy, dummy), box0),
+      ItemFactory(Code.┼, Color.Tan, 1, Vector(dummy, dummy), box1),
+      ItemFactory(Code.±, Color.Blue, 2, Vector(dummy, dummy), box2),
+      ItemFactory(Code.`.`, Color.Yellow, 3, Vector(dummy, dummy), box3),
+      ItemFactory(Code.τ, Color.Grey, 4, Vector(dummy, dummy), box4),
+      ItemFactory(Code.⌠, Color.Brown, 5, Vector(dummy, dummy), box5),
+      ItemFactory(Code.■, Color.Brown, 6, Vector(dummy, dummy), box6)
     )
   }
 }

@@ -9,6 +9,8 @@ import in.dogue.gazophylacium.input.Controls
 object Game {
   val RenderWidth = 512
   val RenderHeight = 512
+  val ScreenWidth = 32
+  val ScreenHeight = 32
 }
 
 class Game(initializer: GleanyInitializer) extends GleanyGame(initializer) {

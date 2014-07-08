@@ -7,6 +7,7 @@ import in.dogue.antiqua.Implicits._
 import com.deweyvm.gleany.graphics.Color
 import com.deweyvm.gleany.data.{Recti, Point2d}
 import in.dogue.antiqua.geometry.Blob
+import in.dogue.gazophylacium.audio.SoundManager
 
 
 case class MachineTile(c:Code, up:Int, down:Int, left:Int, right:Int) {
@@ -174,11 +175,14 @@ case class Machine(tiles:Seq[(Int,Int,Animation)], private val span:Recti, t:Int
 
   def update:Machine = {
     val newTiles = tiles.smap {_.update}
+    if (t % 120 == 0) {
+      SoundManager.bass.play()
+    }
     copy(tiles=newTiles,t=t+1)
   }
 
   private def colorPulse(t:Int):Color = {
-    val dim = Math.abs(Math.sin(t / 30f)*2)
+    val dim = Math.abs(Math.sin(2*3.14159*(t + 30)/240)*2)
     Color.Red.dim(dim.toFloat)
   }
 

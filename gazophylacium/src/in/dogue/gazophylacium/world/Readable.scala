@@ -1,6 +1,6 @@
 package in.dogue.gazophylacium.world
 
-import in.dogue.antiqua.ui.{BoxColorScheme, MessageBox}
+import in.dogue.antiqua.ui._
 import in.dogue.gazophylacium.input.Controls
 import in.dogue.antiqua.data.Code
 import in.dogue.antiqua.Implicits
@@ -8,6 +8,9 @@ import Implicits._
 import scala.util.Random
 import in.dogue.antiqua.graphics.{Rect, Tile}
 import com.deweyvm.gleany.graphics.Color
+import in.dogue.gazophylacium.audio.SoundManager
+import in.dogue.antiqua.graphics.Tile
+import in.dogue.antiqua.ui.{Intro, Start, Outro, Done, Reading}
 
 object Readable {
   def create(i:Int, j:Int, cols:Int, rows:Int, read:Vector[String], page:Vector[String], r:Random) = {
@@ -27,11 +30,18 @@ object Readable {
       val bg = Color.DarkGreen.dim(3 + r.nextDouble)
       Tile(code, bg, fg)
     }
-
+    def letterSound() = SoundManager.blip.play()
+    def boxSound(s:BoxState) = s match {
+      case Start => ()
+      case Intro(_) => SoundManager.fwip.play()
+      case Reading => ()
+      case Outro(_) => SoundManager.fwip.play()
+      case Done => ()
+    }
     val readRect = Rect.createTextured(cols, rows, makeRead, r)
     val pageRect = Rect.createTextured(cols, rows, makePage, r)
-    val readBox = MessageBox.createSpace(cols, rows, read, readCs, readRect, r)
-    val pageBox = MessageBox.createSpace(cols, rows, page, pageCs, pageRect, r)
+    val readBox = MessageBox.createSpace(cols, rows, read, readCs, readRect, letterSound, boxSound, r)
+    val pageBox = MessageBox.createSpace(cols, rows, page, pageCs, pageRect, letterSound, boxSound, r)
     Readable(i, j, readBox, pageBox)
   }
 

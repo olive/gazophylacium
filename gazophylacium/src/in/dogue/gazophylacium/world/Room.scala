@@ -7,18 +7,20 @@ import in.dogue.antiqua.data.{Code, Array2d}
 import com.deweyvm.gleany.graphics.Color
 import scala.util.Random
 import scala.collection.mutable.ArrayBuffer
-import com.deweyvm.gleany.data.{Recti, Point2i}
+import com.deweyvm.gleany.data.{Point2d, Recti, Point2i}
 import in.dogue.gazophylacium.data._
 import in.dogue.gazophylacium.world.doodads._
 import in.dogue.antiqua.graphics.Tile
 import scala.Some
 import in.dogue.gazophylacium.world.doodads.Doodad
-
+import in.dogue.antiqua.Implicits
+import Implicits._
+import in.dogue.gazophylacium.audio.SoundManager
 
 object RoomSpec {
-  def makeSpecs(worldCols:Int, worldRows:Int):Array2d[RoomSpec] = {
+  def makeSpecs(worldCols:Int, worldRows:Int, machineIndex:(Int,Int)):Array2d[RoomSpec] = {
     Array2d.tabulate(worldCols, worldRows) { case (i, j) =>
-      RoomSpec(false, false)
+      RoomSpec(false, (i, j) == machineIndex)
     }
   }
 }
@@ -112,7 +114,7 @@ object Room {
 
 
 
-  private def makeDoodads(dds:Seq[Doodad[_]], biome:Biome, terrain:Terrain, cols:Int, rows:Int, hasMachine:Boolean, r:Random):Seq[Doodad[_]] = {
+  private def makeDoodads(dds:Seq[Doodad[_]], biome:Biome, terrain:Terrain, cols:Int, rows:Int, hasMachine:Boolean, r:Random):(Seq[Doodad[_]], Seq[Doodad[_]]) = {
     val numTrees = 50
     //val trunkColor = Color.Tan.dim(2)
     //val leafColor = Color.Brown.dim(2)
@@ -133,13 +135,13 @@ object Room {
                     j <- rect.y until rect.y + rect.height) yield (i, j)
       ij.exists{ case (i, j) => terrain.isSolid(i, j) }
     }
-
-    val d = if (hasMachine) {
+    val machines = if (hasMachine) {
         val m = Machine.create(10, 10, r).toDoodad(r.nextInt(cols - 10), r.nextInt(rows - 10))
         Vector(m)
       } else {
         Vector()
-      } ++ dds
+      }
+    val d = machines ++ dds
     for (i <- 0 until numTrees) {
       var found = false
       val t0 = allTrees(i)
@@ -165,7 +167,7 @@ object Room {
       }
       ()
     }
-    rawTrees ++ d
+    (rawTrees ++ d, machines)
   }
 
 
@@ -180,8 +182,9 @@ object Room {
   private def getItems(cols:Int, rows:Int, terrain:Terrain, items:Seq[ItemFactory], r:Random):(Seq[Item], Seq[Doodad[_]], Seq[Readable]) = {
     var found = false
     var pos = Point2i(0,0)
+    val buff = 4
     while (!found) {
-      pos = Point2i(r.nextInt(cols), r.nextInt(rows))
+      pos = Point2i(r.nextInt(cols - buff) + buff/2, r.nextInt(rows - buff) + buff/2)
       if (terrain.isSolid(pos.x, pos.y)){
 
       } else {
@@ -200,17 +203,25 @@ object Room {
     val biome = Vector(Biome.Forest, Biome.BurntForest).randomR(r)
     val terrain = generateTerrain(biome, cols, rows, r)
     val (items, ids, irs) = getItems(cols, rows, terrain, is, r)
-    val doodads = makeDoodads(ids, biome, terrain, rows, cols, spec.hasMachine, r)
+    val (doodads, ms) = makeDoodads(ids, biome, terrain, rows, cols, spec.hasMachine, r)
     val readables = irs
     val critters = getCritters(biome, cols, rows, r)
-    Room(worldCols, worldRows, cols, rows, index, terrain, readables, doodads.toVector, critters, items)
+    Room(worldCols, worldRows, cols, rows, index, terrain, readables, doodads.toVector, critters, items, ms)
   }
 }
 
-case class Room(worldCols:Int, worldRows:Int, cols:Int, rows:Int, index:Point2i, terrain:Terrain, rds:Seq[Readable], ts:Seq[Doodad[_]], cs:Seq[Critter], is:Seq[Item]) {
+case class Room(worldCols:Int, worldRows:Int, cols:Int, rows:Int, index:Point2i, terrain:Terrain, rds:Seq[Readable], ts:Seq[Doodad[_]], cs:Seq[Critter], is:Seq[Item], ms:Seq[Doodad[_]]) {
 
   def load(info:RoomInfo) = {
     copy(is=is.filter{it => !info.contains(it)})
+  }
+
+  def getMachinePos:Option[Recti] = {
+    val found = ms.headOption
+    found match {
+      case Some(m) => m.getRect.some
+      case None => None
+    }
   }
 
   def getOob(p:Position):Option[Direction] = {
@@ -242,6 +253,7 @@ case class Room(worldCols:Int, worldRows:Int, cols:Int, rows:Int, index:Point2i,
     val found = is.find{it => isItem(it, i, j)}
     if (found.isDefined) {
       val newItems = is.filter{it => !isItem(it, i, j)}
+      SoundManager.collect.play()
       (Seq(found).flatten, copy(is=newItems))
     } else {
       (Seq(), this)
@@ -303,8 +315,10 @@ case class Room(worldCols:Int, worldRows:Int, cols:Int, rows:Int, index:Point2i,
   def checkMove(p:Position, m:Direction):Position = {
     val newPos = p --> m
     if (isSolid(newPos)) {
+      SoundManager.oof.play()
       p.copy(d=m)
     } else {
+      SoundManager.step.play()
       p.performMove(m)
     }
   }

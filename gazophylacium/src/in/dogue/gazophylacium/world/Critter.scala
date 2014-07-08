@@ -7,12 +7,13 @@ import scala.util.Random
 import in.dogue.gazophylacium.data.Direction
 import in.dogue.antiqua.Implicits._
 import com.deweyvm.gleany.data.{Point2d, Recti}
+import in.dogue.gazophylacium.audio.SoundManager
 
 object Critter {
-  private def create(i:Int, j:Int, anim:Seq[(Int,Int,Animation)], roamSize:Int, prob:Double, r:Random) = {
+  private def create(i:Int, j:Int, anim:Seq[(Int,Int,Animation)], sound:() => Unit, roamSize:Int, prob:Double, r:Random) = {
     val rs = roamSize/2
     val rect = Recti(i - rs, j - rs, roamSize, roamSize)
-    Critter(Position.create(i, j), anim, rect, prob, r)
+    Critter(Position.create(i, j), anim, sound, rect, prob, r)
 
   }
 
@@ -20,7 +21,7 @@ object Critter {
     val t1 = Tile(c1, Color.Black/*unused*/, fg)
     val t2 = Tile(c2, Color.Black/*unused*/, fg)
     val anim = Animation.makeBlinker(speed, Vector(t1, t2))
-    create(i, j, Seq((0,0,anim)), roamSize, prob, r)
+    create(i, j, Seq((0,0,anim)), SoundManager.stepSmall.play, roamSize, prob, r)
   }
 
   def createRandom(i:Int, j:Int, roamSize:Int, r:Random) = {
@@ -50,7 +51,7 @@ object Critter {
       (2, 0, Animation.singleton(mkTile(Code.`≥`)))
 
     )
-    Critter.create(i, j, body, roamSize, 0.99, r)
+    Critter.create(i, j, body, SoundManager.stepMed.play, roamSize, 0.99, r)
   }
 
   def createDragonfly(i:Int, j:Int, roamSize:Int, r:Random) = {
@@ -73,7 +74,7 @@ object Critter {
       (2, 0, rwing)
 
     )
-    Critter.create(i, j, body, roamSize, 0.80, r)
+    Critter.create(i, j, body, SoundManager.stepSmall.play, roamSize, 0.80, r)
   }
 
   def createBird(i:Int, j:Int, roamSize:Int, r:Random) = {
@@ -103,7 +104,7 @@ object Critter {
       (2, 0, rwing)
 
     )
-    Critter.create(i, j, body, roamSize, 0.99, r)
+    Critter.create(i, j, body, SoundManager.stepMed.play, roamSize, 0.99, r)
   }
 
   def createLizard(i:Int, j:Int, roamSize:Int, r:Random) = {
@@ -132,7 +133,7 @@ object Critter {
       (3, 0, head)
 
     )
-    Critter.create(i, j, body, roamSize, 0.99, r)
+    Critter.create(i, j, body, SoundManager.stepBig.play, roamSize, 0.99, r)
   }
 
   def createDino(i:Int, j:Int, roamSize:Int, r:Random) = {
@@ -145,9 +146,13 @@ object Critter {
       (13, mkTile(Code.-))
     ))
     val body = Animation.singleton(mkTile(Code.`=`))
-    val foot = Animation.create(Vector(
+    val lfoot = Animation.create(Vector(
       (19, mkTile(Code.-)),
       (19, mkTile(Code.^))
+    ))
+    val rfoot = Animation.create(Vector(
+      (19, mkTile(Code.^)),
+      (19, mkTile(Code.-))
     ))
 
     val eye = Animation.singleton(mkTile(Code.°))
@@ -162,22 +167,23 @@ object Critter {
       (2, 0, body),
       (3, 0, eye),
       (4, 0, mouth),
-      (1, 1, foot),
-      (3, 1, foot)
+      (1, 1, lfoot),
+      (2, 1, rfoot)
 
     )
-    Critter.create(i, j, all, roamSize, 0.99, r)
+    Critter.create(i, j, all, SoundManager.stepBig.play, roamSize, 0.99, r)
   }
 
 
 }
 
-case class Critter(p:Position, s:Seq[(Int,Int,Animation)], confine:Recti, prob:Double, r:Random) {
+case class Critter(p:Position, s:Seq[(Int,Int,Animation)], sound:() => Unit, confine:Recti, prob:Double, r:Random) {
   def update:Critter = {
     val newPos = if (r.nextDouble > prob) {
       val d = Direction.All.randomR(r)
       val newPos = p --> d
       if (confine.contains(Point2d(newPos.x, newPos.y))) {
+        sound()
         newPos
       } else {
         p

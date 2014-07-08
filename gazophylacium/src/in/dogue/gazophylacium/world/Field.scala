@@ -7,22 +7,54 @@ import in.dogue.antiqua.Implicits._
 import in.dogue.gazophylacium.data._
 import scala.Some
 import in.dogue.gazophylacium.mode.game.{InTransition, InField, FieldState}
+import in.dogue.gazophylacium.mode.{Mode, EndMode}
+import com.deweyvm.gleany.data.Point2d
+import in.dogue.gazophylacium.audio.SoundManager
+import scala.util.Random
 
-case class Field(m:RoomMap, r:Room, p:Player, t:Option[MessageBox]) {
+object Field {
+  def create(m:RoomMap, r:Room, p:Player) = {
+    Field(m, r, p, None, 0)
+  }
+}
+
+case class Field(m:RoomMap, r:Room, p:Player, mb:Option[MessageBox], t:Int) {
 
   def inventory = p.items
   def coords = r.index
 
+  def checkMachine(state:Mode):Mode = {
+    val machinePos = r.getMachinePos
+
+    machinePos match {
+      case Some(rect) if p.paperOut && rect.expand(1, 1).contains(Point2d(p.p.x, p.p.y)) =>
+        if (p.hasAllItems) {
+          val center = rect.center
+          EndMode.create(state, center.toTuple)
+        } else {
+          if (!SoundManager.wrong.isPlaying) {
+            SoundManager.wrong.play()
+          }
+          state
+        }
+
+      case _ => state
+    }
+  }
+
   private def updateCurrent:Field = {
     val pp = p.update
-    val newT = updateMessage(t)
+    val newT = updateMessage(mb)
     val newP = movePlayer(pp)
     val (player, room, map) = updateCollect(newP, r.update)
-    copy(p=player, t = newT, r=room, m=map)
+    if (t % 240 == 0) {
+      SoundManager.trees.randomR(new Random()).play()
+    }
+    copy(p=player, mb = newT, r=room, m=map, t=t+1)
   }
 
   private def movePlayer(p:Player):Player = {
-    if (t.isEmpty) {
+    if (mb.isEmpty) {
       val ppos = p.move.map{m => r.checkMove(p.p, m)}.getOrElse(p.p)
       val unstuck = r.checkStuck(ppos)
       p.copy(p=unstuck)
@@ -82,6 +114,7 @@ case class Field(m:RoomMap, r:Room, p:Player, t:Option[MessageBox]) {
     tr.<+<(r.draw)
       .<+<(p.draw)
       .<+<(r.drawFg)
-      .<+?<(t.map{_.draw(0,0)}) //fixme
+      .<+<(p.drawFg)
+      .<+?<(mb.map{_.draw(0,0)}) //fixme
   }
 }
