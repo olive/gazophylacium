@@ -25,7 +25,6 @@ case class Effect(cols:Int, rows:Int, epicenter:(Int,Int), t:Int, played:Boolean
   val maxX = max(abs(cols - epicenter._1), abs(epicenter._1))
   val maxY = max(abs(rows - epicenter._2), abs(epicenter._2))
   val hypot = (maxX * maxX + maxY * maxY).sqrt
-  println(hypot - radius)
   def update = {
     val newPlayed = if (t % 20 == 0 && hypot - radius > 0) {
       SoundManager.explode.play()

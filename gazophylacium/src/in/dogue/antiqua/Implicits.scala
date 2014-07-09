@@ -10,6 +10,7 @@ object Implicits {
   implicit def indexedSeq2AugProp[A](s:IndexedSeq[(Int, A)]) = new AugIndexedProb(s)
   implicit def num2Aug[A](a:A)(implicit n: Numeric[A]) = new AugNum(a)
   implicit def seq2AugPosSeq[A](seq:Seq[(Int,Int,A)]) = new AugPosSeq(seq)
+  implicit def intTup2Aug[A](tup:(Int,Int)) = new AugIntTuple(tup)
   def id[T](t:T) = t
 
   def impossible = throw new Exception("Impossible")

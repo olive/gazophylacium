@@ -10,7 +10,10 @@ import in.dogue.antiqua.graphics.{Rect, Tile}
 import com.deweyvm.gleany.graphics.Color
 import in.dogue.gazophylacium.audio.SoundManager
 import in.dogue.antiqua.graphics.Tile
-import in.dogue.antiqua.ui.{Intro, Start, Outro, Done, Reading}
+import in.dogue.gazophylacium.ui._
+import in.dogue.antiqua.graphics.Tile
+import in.dogue.gazophylacium.ui.Intro
+import in.dogue.gazophylacium.ui.Outro
 
 object Readable {
   def create(i:Int, j:Int, cols:Int, rows:Int, read:Vector[String], page:Vector[String], r:Random) = {

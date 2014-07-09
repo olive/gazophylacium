@@ -1,7 +1,6 @@
 package in.dogue.gazophylacium.world
 
 import in.dogue.antiqua.graphics.{Animation, TileRenderer}
-import in.dogue.antiqua.ui.MessageBox
 import in.dogue.antiqua.Implicits._
 import in.dogue.antiqua.data.{Code, Array2d}
 import com.deweyvm.gleany.graphics.Color
@@ -16,6 +15,7 @@ import in.dogue.gazophylacium.world.doodads.Doodad
 import in.dogue.antiqua.Implicits
 import Implicits._
 import in.dogue.gazophylacium.audio.SoundManager
+import in.dogue.gazophylacium.ui.MessageBox
 
 object RoomSpec {
   def makeSpecs(worldCols:Int, worldRows:Int, machineIndex:(Int,Int)):Array2d[RoomSpec] = {

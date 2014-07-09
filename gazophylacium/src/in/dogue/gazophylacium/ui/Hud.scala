@@ -5,7 +5,6 @@ import com.deweyvm.gleany.graphics.Color
 import in.dogue.antiqua.data.Code
 import in.dogue.antiqua.graphics.Text
 import in.dogue.gazophylacium.world.Item
-import scala.collection.immutable.IndexedSeq
 import scala.util.Random
 import in.dogue.antiqua.Implicits
 import Implicits._
@@ -50,6 +49,6 @@ case class Hud(height:Int, text:Text, coords:Text, s:Seq[Item], bar:Seq[(Int,Int
   }
 
   def draw(tr:TileRenderer):TileRenderer = {
-    tr <+< r.draw(0,0) <+< text.drawFg(0, 0) <+< coords.drawFg(0 + 12, 0) <+< drawItems(24, 1) <++ bar
+    tr <+< r.draw(0,0) <+< text.drawFg(1, 1) <+< coords.drawFg(0 + 25, 1) <+< drawItems(14, 1) <++ bar
   }
 }

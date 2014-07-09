@@ -1,6 +1,6 @@
 package in.dogue.gazophylacium.world
 
-import in.dogue.antiqua.ui.MessageBox
+
 import in.dogue.antiqua.graphics.TileRenderer
 import in.dogue.gazophylacium.input.Controls
 import in.dogue.antiqua.Implicits._
@@ -11,6 +11,7 @@ import in.dogue.gazophylacium.mode.{Mode, EndMode}
 import com.deweyvm.gleany.data.Point2d
 import in.dogue.gazophylacium.audio.SoundManager
 import scala.util.Random
+import in.dogue.gazophylacium.ui.MessageBox
 
 object Field {
   def create(m:RoomMap, r:Room, p:Player) = {
@@ -47,7 +48,7 @@ case class Field(m:RoomMap, r:Room, p:Player, mb:Option[MessageBox], t:Int) {
     val newT = updateMessage(mb)
     val newP = movePlayer(pp)
     val (player, room, map) = updateCollect(newP, r.update)
-    if (t % 240 == 0) {
+    if (t % 3600 == 0) {
       SoundManager.trees.randomR(new Random()).play()
     }
     copy(p=player, mb = newT, r=room, m=map, t=t+1)
@@ -115,6 +116,6 @@ case class Field(m:RoomMap, r:Room, p:Player, mb:Option[MessageBox], t:Int) {
       .<+<(p.draw)
       .<+<(r.drawFg)
       .<+<(p.drawFg)
-      .<+?<(mb.map{_.draw(0,0)}) //fixme
+      .<+?<(mb.map{_.draw(4,5)}) //fixme
   }
 }

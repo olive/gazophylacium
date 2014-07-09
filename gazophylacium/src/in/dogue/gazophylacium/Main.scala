@@ -5,6 +5,7 @@ import com.deweyvm.gleany.files.PathResolver
 import com.deweyvm.gleany.saving.{SettingDefaults, Settings}
 import com.deweyvm.gleany.data.Point2i
 import in.dogue.antiqua.Implicits._
+import com.deweyvm.gleany.logging.Logger
 
 object Main {
   def main(args: Array[String]) {
@@ -25,6 +26,7 @@ object Main {
       "shaders",
       "maps"
     )
+    Logger.attachCrasher(".")
     val initializer = new GleanyInitializer(pathResolver, settings)
     GleanyGame.runGame(config, new Game(initializer))
 
