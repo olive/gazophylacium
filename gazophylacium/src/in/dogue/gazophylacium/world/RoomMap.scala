@@ -31,6 +31,14 @@ object RoomMap {
   def createItems = {
     val dummy = "Dummy\n dummy dummy\n dummy dummy dunmmy"
     import Rot13._
+    /***/val tbox0 = Vector("Tafasesen","Nalu denaita\nyen demiyu.","Be tanatein\nvoná mân\nadzoun ain?","Otún adzoun\naital arian.")
+    /***/val tbox1 = Vector("Tanoke","Tanokérai ban yuki\nhin settérai.","Be kóimin vona ban?")
+    /***/val tbox2 = Vector("Punnisen","Voná hua byaji?","Be warein voná?","Be gontoun voná?")
+    /***/val tbox3 = Vector("Kêta","Punikatú ittefu\nhentere ya.","Punikatú hentere\nittefu ya.","Tafasoude ittefu\narian.")
+    /***/val tbox4 = Vector("Isaya","Ikatoun ten\ndzesene fasu...","... ten aital dakubi.","Be tusammi voná?")
+    /**/val tbox5 = Vector("Besori","Lemémai wan\npelelaba biloude.","Hodda be ropentoun?")
+
+    /** */val tbox6 = Vector("Todzefu","Eta chekú.","Dadénai mantel tuni.","Hínten.")
     val box0 = Vector("Gur Culynpgrel","Gur cbffvoyvgl\nbs rgreany yvsr.","Jung jvyy lbh\nfnpevsvpr\ngb svaq vg?","Qrngu\njvyy fgvyy\npbzr sbe lbh.").map(rot13)
     val box1 = Vector("Gur Pebff","Gjb ebnqf zrrg\nnaq gura qviretr.","Juvpu cngu\njvyy lbh gnxr?").map(rot13)
     val box2 = Vector("Gur Fpnyrf","Jung vf snve?","Jung vf whfg?","Jung vf rabhtu?").map(rot13)
@@ -39,13 +47,13 @@ object RoomMap {
     val box5 = Vector("Gur Fgnss","Furcureq gubfr\njub jbhyq sbyybj lbh.","Jurer jvyy\nlbh yrnq gurz?").map(rot13)
     val box6 = Vector("Gur Cntr","N oynax fyngr.","Perngr\nlbhe bja havirefr.","N qbbqyr.").map(rot13)
     Vector(
-      ItemFactory(Code.¶, Color.Cyan, 0, Vector(dummy, dummy), box0),
-      ItemFactory(Code.┼, Color.Tan, 1, Vector(dummy, dummy), box1),
-      ItemFactory(Code.±, Color.Blue, 2, Vector(dummy, dummy), box2),
-      ItemFactory(Code.`.`, Color.Yellow, 3, Vector(dummy, dummy), box3),
-      ItemFactory(Code.τ, Color.Grey, 4, Vector(dummy, dummy), box4),
-      ItemFactory(Code.⌠, Color.Brown, 5, Vector(dummy, dummy), box5),
-      ItemFactory(Code.■, Color.Brown, 6, Vector(dummy, dummy), box6)
+      ItemFactory(Code.¶, Color.Cyan, 0, tbox0, box0),
+      ItemFactory(Code.┼, Color.Tan, 1, tbox1, box1),
+      ItemFactory(Code.±, Color.Blue, 2, tbox2, box2),
+      ItemFactory(Code.`.`, Color.Yellow, 3, tbox3, box3),
+      ItemFactory(Code.τ, Color.Grey, 4, tbox4, box4),
+      ItemFactory(Code.⌠, Color.Brown, 5, tbox5, box5),
+      ItemFactory(Code.■, Color.Brown, 6, tbox6, box6)
     )
   }
 }
